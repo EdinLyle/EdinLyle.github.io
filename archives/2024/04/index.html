@@ -193,7 +193,7 @@
   const ipt = document.querySelector('#search-input')
   const btn = document.querySelector('#search-btn')
   const layer = document.querySelector('#search-layer')
-  const posts = JSON.parse(`[{"title":"Hello World","path":"2024/04/02/hello-world/"},{"title":"记一次补天公益","path":"2024/04/03/记一次补天公益/"}]`)
+  const posts = JSON.parse(`[{"title":"Hello World","path":"2024/04/02/hello-world/"}]`)
   ipt.addEventListener('keyup', e => {
     if (e.key === 'Enter') {
       handleSearch()
@@ -258,13 +258,13 @@
       <div class="main-left--statics">
         <a href="/categories">
           <div>
-            <span>1</span>
+            <span>0</span>
             <span>分类</span>
           </div>
         </a>
         <a href="/tags">
           <div>
-            <span>1</span>
+            <span>0</span>
             <span>标签</span>
           </div>
         </a>
@@ -327,7 +327,7 @@
       </h5>
       <p class="main-left--subtitle">
         <span>文章数目：</span>
-        <span>2 篇</span>
+        <span>1 篇</span>
       </p>
       <p class="main-left--subtitle">
         <span>最近动态：</span>
@@ -358,32 +358,6 @@
       <div class="index-article">
         <!-- <img class="index-article--cover" src="/imgs/default-cover.webp" alt=""> -->
         <div class="index-article--box">
-          <img class="index-article--cover" data-cover="imgs/default-cover.webp" alt="记一次补天公益" />
-        </div>
-        <div class="index-article--content">
-          <a href="/2024/04/03/%E8%AE%B0%E4%B8%80%E6%AC%A1%E8%A1%A5%E5%A4%A9%E5%85%AC%E7%9B%8A/">记一次补天公益 </a>
-          <div>
-            
-              <p>
-                <a class="post-category-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</a>
-              </p>
-            
-            
-              <p>
-                <a class="-link" href="/tags/edusrc/" rel="tag">edusrc</a>
-              </p>
-            
-          </div>
-          <div class="bg"></div>
-        </div>
-      </div>
-    
-  </div>
-  <div class="index-center">
-    
-      <div class="index-article">
-        <!-- <img class="index-article--cover" data-cover="" src="/imgs/default-cover.webp" alt=""> -->
-        <div class="index-article--box">
           <img class="index-article--cover" data-cover="imgs/default-cover.webp" alt="Hello World" />
         </div>
         <div class="index-article--content">
@@ -397,11 +371,14 @@
       </div>
     
   </div>
+  <div class="index-center">
+    
+  </div>
   <div class="index-right">
     <div class="index-right-wrapper">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</a></li></ul>
-      <ul class="tags" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/edusrc/" rel="tag">edusrc</a></li></ul>
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/04/">2024年04月</a><span class="archive-list-count">2</span></li></ul>
+      
+      
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/04/">2024年04月</a><span class="archive-list-count">1</span></li></ul>
     </div>
   </div>
 </div>
