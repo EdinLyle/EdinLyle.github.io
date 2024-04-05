@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>我的技术与生活——小站首页 | Hexo</title>
+  <title>我的技术与生活——记第一次eudsrc拿到RCE | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/css/public.css" />
@@ -16,7 +16,7 @@
 
   <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
   <script>
-    document.title = `我的技术与生活——小站首页`
+    document.title = `我的技术与生活——记第一次eudsrc拿到RCE`
   </script>
 <meta name="generator" content="Hexo 7.1.1"></head>
 
@@ -344,115 +344,155 @@
     </div>
   </div>
 </div></div>
-      <div id="main-container" class="main-container"><link rel="stylesheet" href="/css/partial/index.css" />
+      <div id="main-container" class="main-container">
 
 
+  <link rel="stylesheet" href="/css/partial/article.css" />
 
-<div class="index">
-  <div class="index-left">
-    
-      <div class="index-article">
-        <!-- <img class="index-article--cover" src="/imgs/default-cover.webp" alt=""> -->
-        <div class="index-article--box">
-          <img class="index-article--cover" data-cover="imgs/default-cover.webp" alt="记第一次eudsrc拿到RCE" />
-        </div>
-        <div class="index-article--content">
-          <a href="/2024/04/05/%E8%AE%B0%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%8B%BF%E5%88%B0RCE/">记第一次eudsrc拿到RCE </a>
-          <div>
-            
-              <p>
-                <a class="post-category-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</a>
-              </p>
-            
-            
-              <p>
-                <a class="-link" href="/tags/edusrc/" rel="tag">edusrc</a>
-              </p>
-            
+<div class="article-container">
+  <div class="article">
+    <h1 class="article-title">记第一次eudsrc拿到RCE</h1>
+    <div class="article-info">
+      <div class="article-info--item">
+        <div class="article-info--info">
+          
+          <div class="article-info--categories">
+            <span>分类：</span>
+            <a class="category-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</a>
           </div>
-          <div class="bg"></div>
+          
+          
+          <div class="article-info--tags">
+            <span>标签：</span>
+            <a class="tag-link" href="/tags/edusrc/" rel="tag">edusrc</a>
+          </div>
+          
+          <p class="article-info--date">日期：2024-04-05 21:50:00</p>
         </div>
+        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
       </div>
+    </div>
+    <article class="article-content markdown-body">
+      <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>​                                                                                   <strong>免责声明</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">以下漏洞均已经上报漏洞平台。请勿利用文章内的相关技术从事非法测试。若因此产生一切后果与本博客及本人无关。</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">本来想大学四年都不会有可能拿到一次大佬长谈的RCE,没想到,居然在学了一天liunx上部署和学习Javaweb后,休息时一波信息收集拿到了,美滋滋,The harder you work, the luckier you get.</span><br></pre></td></tr></table></figure>
+
+<h2 id="挖洞公式"><a href="#挖洞公式" class="headerlink" title="挖洞公式"></a>挖洞公式</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">运气+长期积累+感想敢做+耐心+细心</span><br></pre></td></tr></table></figure>
+
+<h2 id="漏洞介绍"><a href="#漏洞介绍" class="headerlink" title="漏洞介绍"></a>漏洞介绍</h2><h3 id="CLI命令注入介绍"><a href="#CLI命令注入介绍" class="headerlink" title="CLI命令注入介绍"></a>CLI命令注入介绍</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CLI命令注入，也称为命令注入攻击，是一种安全漏洞，它允许攻击者在目标系统中执行恶意命令。攻击通常发生在应用程序需要执行系统命令时，却没有对用户输入进行严格的验证和过滤。攻击者通过在输入框中输入恶意构造的命令字符串，可以使得应用程序在服务器上执行这些命令，从而可能导致数据泄露、系统破坏或其他恶意行为。</span><br></pre></td></tr></table></figure>
+
+<h3 id="RCE漏洞介绍"><a href="#RCE漏洞介绍" class="headerlink" title="RCE漏洞介绍"></a><strong>RCE漏洞介绍</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">远程代码执行（Remote Code Execution）漏洞，是一种严重的安全缺陷，RCE漏洞的存在通常是由于应用程序设计上的缺陷或编程错误导致的。允许攻击者在目标系统上远程执行任意代码或命令。</span><br></pre></td></tr></table></figure>
+
+<h1 id="漏洞详情"><a href="#漏洞详情" class="headerlink" title="漏洞详情"></a>漏洞详情</h1><pre><code> 和大多数佬一样,最容易出洞地方,除了后台就是登录了,也是看到登录,抱着试试的态度,看到说熟悉又陌生的页面,熟悉是因为看过一些文章,陌生是因为完全没有挖过这个系统的漏洞.
+</code></pre>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404052255916.png" alt="EG易网关"></p>
+<p>   看到登录框,我的思路一般就是尝试弱口令,尝试万能密码,和是否有SQL,最多有个XSS,如果都无法利用的话,就尝试进行js审计,找接口,看是否存在未授权.</p>
+<p>  如果我么做了不就白折腾了,这里我直接bing搜索锐捷EG易网关漏洞,发现有复现文章,直接开始复现</p>
+<h2 id="漏洞点1"><a href="#漏洞点1" class="headerlink" title="漏洞点1"></a>漏洞点1</h2><p><strong>前台CLI命令执行漏洞</strong></p>
+<p>在登录框中输入poc后,进行bp抓包</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404052313261.png"></p>
+<p>poc:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">username=admin&amp;password=pass%3Fshow+webmaster+user</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404052310361.png"></p>
+<p>使用获得的管理员密码进行登录 admin&#x2F;xxxxxxxxxx 进入后台,如图所示</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404052317947.png" alt="后台"></p>
+<h2 id="漏洞点2"><a href="#漏洞点2" class="headerlink" title="漏洞点2"></a>漏洞点2</h2><p>登录后台后,在&#x2F;cli.php?a&#x3D;shell接口中,存在RCE</p>
+<p>poc:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/cli.php?a=shell</span><br><span class="line"></span><br><span class="line">notdelay=true&amp;command=whoami</span><br></pre></td></tr></table></figure>
+
+<p>原数据包:</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404052321317.png" alt="原数据包"></p>
+<p><strong>参数command可控</strong>,执行whoami查看当前用户,确定是root用户</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404052324091.png" alt="执行whoami"></p>
+<p>执行ls,查看服务器当前目录下的文件</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404052326173.png" alt="执行ls"></p>
+<p>​	到此为止就结束了本次渗透测试,当然越容易拿到的,也很可能会重复,那不就白费功夫了,进入系统后,我第一时间查看了日志,确定仅我一人最近以管理员进入过系统,拿到评分严重的RCE,美滋滋.</p>
+<h1 id="修复建议"><a href="#修复建议" class="headerlink" title="修复建议"></a>修复建议</h1><p>​	为什么还要有这个,作为软工的我也算开发者吧,当下来说,不仅要会挖,还是要懂怎么去修和多了解一些,给出建议,对开发和自己来说也是互帮互助.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">针对锐捷EG易网关的远程代码执行（RCE）漏洞，应确保设备的固件和软件是最新版本，制造商会通过更新来修复安全漏洞。加强对设备访问权限的管理，通过限制可访问管理界面的IP地址，使用强密码策略，并定期更换密码。关闭不必要的服务功能，访客认证和本地服务器认证，以减少潜在攻击面。实施网络隔离，比如将管理网络与数据网络分开，以增强网络安全性。启用详细日志记录，监控异常活动，并定期审计日志文件。定期备份设备配置，以便在遭遇安全事件时能快速恢复。遵循行业最佳实践和安全指南进行设备配置和管理。若需要进一步技术支持，及时联系锐捷的官方技术支持团队。最后，保持对制造商发布的安全公告和更新的关注，以便及时应对新出现的安全威胁。</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">对一个系统进行渗透过程中需要多查看现有页面的title,技术支持和属性的ico,和特殊的文件名(js)等,当然这些也是通过多看文章和思考长期积累而来的,需要坚持，耐心，细心，这次我就是灵光一闪想到了，这个系统就被拿下了,说不定你也能在无意之间碰到呢。</span><br></pre></td></tr></table></figure>
+
+    </article>
+    
+    <div class="read-nums">
+      <!-- id 将作为查询条件 -->
+      <span id="2024/04/05/记第一次拿到RCE/" class="leancloud_visitors" data-flag-title="Your Article Title">
+        <em class="post-meta-item-text">浏览量</em>
+        <i class="leancloud-visitors-count"></i>
+      </span>
+    </div>
+    <div class="comments-intro">
+      <h2>评论区</h2>
+      <p>欢迎你留下宝贵的意见，昵称输入QQ号会显示QQ头像哦~</p>
+    </div>
+    <div id="vcomments" class="vcomments"></div>
     
   </div>
-  <div class="index-center">
-    
-  </div>
-  <div class="index-right">
-    <div class="index-right-wrapper">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Hexo/">Hexo</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</a></li></ul>
-      <ul class="tags" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%9A%E5%AE%A2/" rel="tag">博客</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/edusrc/" rel="tag">edusrc</a></li></ul>
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/04/">2024年04月</a><span class="archive-list-count">2</span></li></ul>
+  <div class="article-catelogue">
+    <div class="article-catelogue--wrapper">
+      <div class="catelogue catelogue-1">
+        <h3>目录</h3>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%96%E6%B4%9E%E5%85%AC%E5%BC%8F"><span class="toc-number">1.1.</span> <span class="toc-text">挖洞公式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.2.</span> <span class="toc-text">漏洞介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CLI%E5%91%BD%E4%BB%A4%E6%B3%A8%E5%85%A5%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.2.1.</span> <span class="toc-text">CLI命令注入介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RCE%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.2.2.</span> <span class="toc-text">RCE漏洞介绍</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E8%AF%A6%E6%83%85"><span class="toc-number">2.</span> <span class="toc-text">漏洞详情</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E7%82%B91"><span class="toc-number">2.1.</span> <span class="toc-text">漏洞点1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E7%82%B92"><span class="toc-number">2.2.</span> <span class="toc-text">漏洞点2</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E5%BB%BA%E8%AE%AE"><span class="toc-number">3.</span> <span class="toc-text">修复建议</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol>
+      </div>
+      
+        <div class="catelogue catelogue-2">
+           
+          
+            <p>
+              <span>下一篇</span>
+              <a href="/2024/04/03/Hexo的使用/">Hexo的使用</a>
+            </p>
+          
+        </div>
+      
     </div>
   </div>
 </div>
 
 
 <script>
-  var allImgBoxs = document.querySelectorAll('.index-article--box');
-  var windowHeight = window.innerHeight;
-  var boxs = Array.from(allImgBoxs);
-  var timer = null;
-  boxs.forEach((box, idx) => {
-    if (!window.loadImageSet || !window.loadImageSet.includes(idx)) {
-      box.classList.add('img-loading');
-    } else {
-      const imgDom = box.querySelector('img');
-      imgDom.src = imgDom.dataset.cover;
-    }
-  });
+  // var定义，避免pjax重新进来造成的重复声明错误
+  var config = JSON.parse('{"enable":true,"appId":"Pf8zCXGEH1qsprnWfikVVujL-gzGzoHsz","appKey":"qOqoiUHhH1TGtLRUYURkLRQX","placeholder":"请留下你宝贵的意见吧~","meta":["nick"],"recordIP":true,"visitor":true,"enableQQ":true}')
+  new Valine({
+    el: '#vcomments',
+    appId: config.appId,
+    appKey: config.appKey,
+    placeholder: config.placeholder,
+    meta: config.meta,
+    recordIP: config.recordIP,
+    visitor: config.visitor,
+    enableQQ: config.enableQQ,
+    path: '2024/04/05/记第一次拿到RCE/'
+  })
+</script>
 
-  function scrollFn() {
-    if (timer) {
-      return;
-    }
-    timer = setTimeout(() => {
-      loadImage();
-      timer = null;
-    }, 100)
-  }
 
-  setTimeout(() => {
-    loadImage();
-  }, 100);
-  if (!window.loadedImage) {
-    document.addEventListener('scroll', scrollFn);
-  }
+<script>
+  $(document).on('pjax:complete', function() {
+    const tocs = document.querySelector('.toc')
+    const links = tocs ? tocs.querySelectorAll('a') : []
+    links.forEach(link => {
+      link.addEventListener('click', e => {
+        const href = decodeURIComponent(e.href)
+        href.search(/#(.*)/)
+        const id = RegExp.$1
+        const target = document.querySelector('#' + id)
+        const top = target.offsetTop
+        document.documentElement.scrollTo({
+          top: top - 100,
+          behavior: 'smooth'
+        })
+        e.preventDefault()
+      })
+    })
+  })
+</script> 
 
-  function loadImage() {
-    const doc = document.documentElement;
-    const scrollTop = doc.scrollTop;
-    if (boxs.every(box => box.loadedImage)) {
-      document.removeEventListener('scroll', scrollFn);
-      window.loadedImage = 1;
-      return;
-    }
-    boxs.forEach((box, idx) => {
-      if (box.loadedImage) {
-        return;
-      }
-      if (box.getBoundingClientRect().top < windowHeight) {
-        const imgDom = box.querySelector('img');
-        imgDom.src = imgDom.dataset.cover;
-        // 图片成功加载
-        imgDom.onload = () => {
-          box.classList.remove('img-loading');
-          box.loadedImage = true;
-          if (!window.loadImageSet) {
-            window.loadImageSet = [];
-          }
-          window.loadImageSet.push(idx);
-        }
-        // 图片加载失败
-        imgDom.onerror = () => {
-          box.classList.remove('img-loading');
-          box.classList.add('img-error');
-          imgDom.src = '/imgs/404.png';
-        }
-      }
-    });
-  }
-</script> </div>
+</div>
       <div class="main-right-wrapper"><div class="main-right">
   <div class="main-right--board">
     <div class="main-right--title">
