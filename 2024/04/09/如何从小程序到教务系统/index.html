@@ -193,7 +193,7 @@
   const ipt = document.querySelector('#search-input')
   const btn = document.querySelector('#search-btn')
   const layer = document.querySelector('#search-layer')
-  const posts = JSON.parse(`[{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"}]`)
+  const posts = JSON.parse(`[{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"}]`)
   ipt.addEventListener('keyup', e => {
     if (e.key === 'Enter') {
       handleSearch()
@@ -327,7 +327,7 @@
       </h5>
       <p class="main-left--subtitle">
         <span>文章数目：</span>
-        <span>5 篇</span>
+        <span>4 篇</span>
       </p>
       <p class="main-left--subtitle">
         <span>最近动态：</span>
@@ -381,7 +381,76 @@
 
 
 
-<h1 id="如何从小程序到教务系统—-漏洞思路分享"><a href="#如何从小程序到教务系统—-漏洞思路分享" class="headerlink" title="如何从小程序到教务系统—-漏洞思路分享"></a><strong>如何从小程序到教务系统—-漏洞思路分享</strong></h1><h2 id="挖洞前提"><a href="#挖洞前提" class="headerlink" title="挖洞前提"></a>挖洞前提</h2>
+<h1 id="如何从小程序到教务系统—-漏洞思路分享"><a href="#如何从小程序到教务系统—-漏洞思路分享" class="headerlink" title="如何从小程序到教务系统—-漏洞思路分享"></a><strong>如何从小程序到教务系统—-漏洞思路分享</strong></h1><h2 id="挖洞前提"><a href="#挖洞前提" class="headerlink" title="挖洞前提"></a>挖洞前提</h2><p>​	相信很多师傅都会遇到这个问题,如果挖edu没有账号，那么就可以尝试去挖小程序，因为大部分小程序可以微信登陆，不需要账号密码登陆，那么小程序就可以作为一个入口去测试.</p>
+<h2 id="测试案例"><a href="#测试案例" class="headerlink" title="测试案例"></a>测试案例</h2><h3 id="小程序部分"><a href="#小程序部分" class="headerlink" title="小程序部分:"></a>小程序部分:</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">本次案例就是一个小程序案例,一开始我也没有账号，那么将目光瞄准小程序,一开始是一个缴费系统</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="漏洞点一-越权"><a href="#漏洞点一-越权" class="headerlink" title="漏洞点一(越权):"></a>漏洞点一(越权):</h4><p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091113240.png"></p>
+<p>首先看到了界面上的培训报名功能点,点进去,看看数据包</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091115461.png"></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091116125.png"></p>
+<p>找到了这个数据包</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">GET /api/social/regsuccess?studentId=0&amp;openId=o2KYg5d6Xp-XfyRH55bepR6A2Onk HTTP/2</span><br><span class="line">Host: xxxxx.edu.cn</span><br><span class="line">Xweb_xhr: 1</span><br><span class="line">Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJvMktZZzVkNlhwLVhmeVJINTViZXBSNkEyT25rIiwiaWF0IjoiMTcxMjA1OTMxMSIsIm5iZiI6IjE3MTIwNTkzMTEiLCJleHAiOiIxNzEyMDYwMzExIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9leHBpcmF0aW9uIjoiMjAyNC80LzIgMjA6MTg6MzEiLCJpc3MiOiJTZWNTY2hvb2wiLCJhdWQiOiJ3ciJ9.549KCByIzlS0x4sgl5bmXBx7sxSuFsaSQp4IVbcJ1ts</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x6309092b) XWEB/9079</span><br><span class="line">Content-Type: application/json</span><br><span class="line">Accept: */*</span><br><span class="line">Sec-Fetch-Site: cross-site</span><br><span class="line">Sec-Fetch-Mode: cors</span><br><span class="line">Sec-Fetch-Dest: empty</span><br><span class="line">Referer: https://xxxxxxxxx</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9</span><br></pre></td></tr></table></figure>
+
+<p>发包</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091119101.png"></p>
+<p>​	</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">当studentId=0 的时候，显示该学员还没注册,那么下一步很正常的思路就是遍历一下studentId 看看会不会返回敏感信息</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091121131.png"></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091122870.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">随意更改一下studentId就出现很多敏感信息 ,放到爆破模块跑一下,随意跑500个</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091123108.png"></p>
+<p>跑出来了很多一个人的三件套,姓名,身份证,学号,<strong>越权+1</strong></p>
+<h4 id="漏洞点2-敏感信息泄露"><a href="#漏洞点2-敏感信息泄露" class="headerlink" title="漏洞点2(敏感信息泄露):"></a>漏洞点2(敏感信息泄露):</h4><p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091126740.png"></p>
+<p>现在尝试登陆这个小程序,随意使用爆出来的身份信息进行登陆</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091129192.png"></p>
+<p>成功登陆进小程序,拿到个人信息</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091130161.png"></p>
+<p><strong>敏感信息泄露+1</strong></p>
+<h4 id="漏洞点3-越权"><a href="#漏洞点3-越权" class="headerlink" title="漏洞点3(越权):"></a>漏洞点3(越权):</h4><p>继续在登陆过后的小程序翻找功能点</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091131984.png"></p>
+<p>我的票据—-查看票据</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091132378.png"></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091132935.png"></p>
+<p>数据包</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">GET /api/order/loadOrderInvoice?orderNumber=20230829199535 HTTP/2</span><br><span class="line">Host: xxxxxx.edu.cn</span><br><span class="line">Xweb_xhr: 1</span><br><span class="line">Authorization: Basic eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJvMktZZzVkNlhwLVhmeVJINTViZXBSNkEyT25rIiwiaWF0IjoiMTcxMjA1OTMxMSIsIm5iZiI6IjE3MTIwNTkzMTEiLCJleHAiOiIxNzEyMDYwMzExIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9leHBpcmF0aW9uIjoiMjAyNC80LzIgMjA6MTg6MzEiLCJpc3MiOiJTZWNTY2hvb2wiLCJhdWQiOiJ3ciJ9.549KCByIzlS0x4sgl5bmXBx7sxSuFsaSQp4IVbcJ1ts</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x6309092b) XWEB/9079</span><br><span class="line">Content-Type: application/json</span><br><span class="line">Accept: */*</span><br><span class="line">Sec-Fetch-Site: cross-site</span><br><span class="line">Sec-Fetch-Mode: cors</span><br><span class="line">Sec-Fetch-Dest: empty</span><br><span class="line">Referer: </span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9</span><br></pre></td></tr></table></figure>
+
+<p>观察到了orderNumbe 号码  那么尝试更改一下  20230829199533</p>
+<p> 发包</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091133272.png"></p>
+<p>查看该照片</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091133495.png"></p>
+<p>可以看到缴费人和缴费金额不一样了，存在越权,<strong>越权+1</strong></p>
+<h3 id="Web部分"><a href="#Web部分" class="headerlink" title="Web部分:"></a>Web部分:</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">现在我们整理一下收集到的信息  很多学号  身份证  姓名  三要素齐全了  那么我们下一步思路就是通过这些东西去登陆该学校其他系统</span><br></pre></td></tr></table></figure>
+
+
+
+<p> <strong>鹰图搜索</strong></p>
+<p>​	直接找到很多系统  尝试去登陆  </p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091139884.png"></p>
+<pre><code> 这一步很重要  因为即使账号密码修改了，不是默认的也没有关系，我们可以通过身份证来修改密码，这样就达到了登陆的效果
+</code></pre>
+<h4 id="拿到了第一个系统"><a href="#拿到了第一个系统" class="headerlink" title="拿到了第一个系统"></a>拿到了第一个系统</h4><p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091139050.png"></p>
+<p>​	                                            界面上没有修改密码的选项,那么就查看js,找到修改密码的接口</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091139006.png"></p>
+<p>拼接</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091139598.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">发现可以直接通过身份证进行密码重置，这里就可以直接重置密码进入系统，然后可以进行后续操作</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="第二个系统"><a href="#第二个系统" class="headerlink" title="第二个系统"></a>第二个系统</h4><p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091139209.png"></p>
+<p>标准的教务系统,继续忘记密码</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091139242.png"></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091139223.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">密保答案可以随意填写,然后就可以直接修改密码了,这里就只对身份证做了验证，而恰巧我们就得到了身份证,后续我们登陆成功</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404091147231.png"></p>
+<p>后续就不继续深入讲了</p>
+
     </article>
     
     <div class="read-nums">
@@ -402,7 +471,7 @@
     <div class="article-catelogue--wrapper">
       <div class="catelogue catelogue-1">
         <h3>目录</h3>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BB%8E%E5%B0%8F%E7%A8%8B%E5%BA%8F%E5%88%B0%E6%95%99%E5%8A%A1%E7%B3%BB%E7%BB%9F%E2%80%94-%E6%BC%8F%E6%B4%9E%E6%80%9D%E8%B7%AF%E5%88%86%E4%BA%AB"><span class="toc-number">2.</span> <span class="toc-text">如何从小程序到教务系统—-漏洞思路分享</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%96%E6%B4%9E%E5%89%8D%E6%8F%90"><span class="toc-number">2.1.</span> <span class="toc-text">挖洞前提</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BB%8E%E5%B0%8F%E7%A8%8B%E5%BA%8F%E5%88%B0%E6%95%99%E5%8A%A1%E7%B3%BB%E7%BB%9F%E2%80%94-%E6%BC%8F%E6%B4%9E%E6%80%9D%E8%B7%AF%E5%88%86%E4%BA%AB"><span class="toc-number">2.</span> <span class="toc-text">如何从小程序到教务系统—-漏洞思路分享</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%96%E6%B4%9E%E5%89%8D%E6%8F%90"><span class="toc-number">2.1.</span> <span class="toc-text">挖洞前提</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E6%A1%88%E4%BE%8B"><span class="toc-number">2.2.</span> <span class="toc-text">测试案例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E7%A8%8B%E5%BA%8F%E9%83%A8%E5%88%86"><span class="toc-number">2.2.1.</span> <span class="toc-text">小程序部分:</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E7%82%B9%E4%B8%80-%E8%B6%8A%E6%9D%83"><span class="toc-number">2.2.1.1.</span> <span class="toc-text">漏洞点一(越权):</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E7%82%B92-%E6%95%8F%E6%84%9F%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2"><span class="toc-number">2.2.1.2.</span> <span class="toc-text">漏洞点2(敏感信息泄露):</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E7%82%B93-%E8%B6%8A%E6%9D%83"><span class="toc-number">2.2.1.3.</span> <span class="toc-text">漏洞点3(越权):</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Web%E9%83%A8%E5%88%86"><span class="toc-number">2.2.2.</span> <span class="toc-text">Web部分:</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8B%BF%E5%88%B0%E4%BA%86%E7%AC%AC%E4%B8%80%E4%B8%AA%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.2.2.1.</span> <span class="toc-text">拿到了第一个系统</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E4%B8%AA%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.2.2.2.</span> <span class="toc-text">第二个系统</span></a></li></ol></li></ol></li></ol></li></ol>
       </div>
       
         <div class="catelogue catelogue-2">
