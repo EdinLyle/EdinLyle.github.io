@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>我的技术与生活——tools | Hexo</title>
+  <title>我的技术与生活——如何从小程序到教务系统 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/css/public.css" />
@@ -16,7 +16,7 @@
 
   <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
   <script>
-    document.title = `我的技术与生活——tools`
+    document.title = `我的技术与生活——如何从小程序到教务系统`
   </script>
 <meta name="generator" content="Hexo 7.1.1"></head>
 
@@ -347,28 +347,116 @@
       <div id="main-container" class="main-container">
 
 
-  <link rel="stylesheet" href="/css/partial/tools.css" />
+  <link rel="stylesheet" href="/css/partial/article.css" />
 
-
-
-<div class="tools">
-  <h2 class="tools-title">我的自制工具列表...</h2>
-  <ul class="tools-list">
-    
-      <li>
-        <img class="tool-cover" src="https://coke-cola.gitee.io/resume-page/assets/dark-f439b888.jpeg" alt="">
-        <div class="tool-info">
-          <div>
-            <p class="tool-title">在线简历生成器</p>
-            <p class="tool-intro">一个免费的在线简历生成工具</p>
+<div class="article-container">
+  <div class="article">
+    <h1 class="article-title">如何从小程序到教务系统</h1>
+    <div class="article-info">
+      <div class="article-info--item">
+        <div class="article-info--info">
+          
+          <div class="article-info--categories">
+            <span>分类：</span>
+            <a class="category-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</a>
           </div>
-          <a class="tool-link" href="https://coke-cola.gitee.io/resume-page/#/" target="_blank">前往使用>></a>
+          
+          
+          <div class="article-info--tags">
+            <span>标签：</span>
+            <a class="tag-link" href="/tags/%E5%B0%8F%E7%A8%8B%E5%BA%8F%E6%B8%97%E9%80%8F/" rel="tag">小程序渗透</a>
+          </div>
+          
+          <p class="article-info--date">日期：2024-04-09 10:32:59</p>
         </div>
-      </li>
+        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
+      </div>
+    </div>
+    <article class="article-content markdown-body">
+      <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>​                                                                                   <strong>免责声明</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">以下漏洞均已经上报漏洞平台。请勿利用文章内的相关技术从事非法测试。若因此产生一切后果与本博客及本人无关。</span><br></pre></td></tr></table></figure>
+
+<p>​                                                                                   <strong>分享声明</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">此篇博文为微信公众号小呆安全的404Xyunxi_师傅投稿的,经过本人同意,进行分享</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="如何从小程序到教务系统—-漏洞思路分享"><a href="#如何从小程序到教务系统—-漏洞思路分享" class="headerlink" title="如何从小程序到教务系统—-漏洞思路分享"></a><strong>如何从小程序到教务系统—-漏洞思路分享</strong></h1><h2 id="挖洞前提"><a href="#挖洞前提" class="headerlink" title="挖洞前提"></a>挖洞前提</h2>
+    </article>
     
-  </ul>
+    <div class="read-nums">
+      <!-- id 将作为查询条件 -->
+      <span id="2024/04/09/如何从小程序到教务系统/" class="leancloud_visitors" data-flag-title="Your Article Title">
+        <em class="post-meta-item-text">浏览量</em>
+        <i class="leancloud-visitors-count"></i>
+      </span>
+    </div>
+    <div class="comments-intro">
+      <h2>评论区</h2>
+      <p>欢迎你留下宝贵的意见，昵称输入QQ号会显示QQ头像哦~</p>
+    </div>
+    <div id="vcomments" class="vcomments"></div>
+    
+  </div>
+  <div class="article-catelogue">
+    <div class="article-catelogue--wrapper">
+      <div class="catelogue catelogue-1">
+        <h3>目录</h3>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BB%8E%E5%B0%8F%E7%A8%8B%E5%BA%8F%E5%88%B0%E6%95%99%E5%8A%A1%E7%B3%BB%E7%BB%9F%E2%80%94-%E6%BC%8F%E6%B4%9E%E6%80%9D%E8%B7%AF%E5%88%86%E4%BA%AB"><span class="toc-number">2.</span> <span class="toc-text">如何从小程序到教务系统—-漏洞思路分享</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%96%E6%B4%9E%E5%89%8D%E6%8F%90"><span class="toc-number">2.1.</span> <span class="toc-text">挖洞前提</span></a></li></ol></li></ol>
+      </div>
+      
+        <div class="catelogue catelogue-2">
+           
+          
+            <p>
+              <span>下一篇</span>
+              <a href="/2024/04/07/小白如何挖到自己的第一个漏洞/">小白如何挖到自己的第一个漏洞</a>
+            </p>
+          
+        </div>
+      
+    </div>
+  </div>
 </div>
 
+
+<script>
+  // var定义，避免pjax重新进来造成的重复声明错误
+  var config = JSON.parse('{"enable":true,"appId":"Pf8zCXGEH1qsprnWfikVVujL-gzGzoHsz","appKey":"qOqoiUHhH1TGtLRUYURkLRQX","placeholder":"请留下你宝贵的意见吧~","meta":["nick"],"recordIP":true,"visitor":true,"enableQQ":true}')
+  new Valine({
+    el: '#vcomments',
+    appId: config.appId,
+    appKey: config.appKey,
+    placeholder: config.placeholder,
+    meta: config.meta,
+    recordIP: config.recordIP,
+    visitor: config.visitor,
+    enableQQ: config.enableQQ,
+    path: '2024/04/09/如何从小程序到教务系统/'
+  })
+</script>
+
+
+<script>
+  $(document).on('pjax:complete', function() {
+    const tocs = document.querySelector('.toc')
+    const links = tocs ? tocs.querySelectorAll('a') : []
+    links.forEach(link => {
+      link.addEventListener('click', e => {
+        const href = decodeURIComponent(e.href)
+        href.search(/#(.*)/)
+        const id = RegExp.$1
+        const target = document.querySelector('#' + id)
+        const top = target.offsetTop
+        document.documentElement.scrollTo({
+          top: top - 100,
+          behavior: 'smooth'
+        })
+        e.preventDefault()
+      })
+    })
+  })
+</script> 
 
 </div>
       <div class="main-right-wrapper"><div class="main-right">

@@ -193,7 +193,7 @@
   const ipt = document.querySelector('#search-input')
   const btn = document.querySelector('#search-btn')
   const layer = document.querySelector('#search-layer')
-  const posts = JSON.parse(`[{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"}]`)
+  const posts = JSON.parse(`[{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"}]`)
   ipt.addEventListener('keyup', e => {
     if (e.key === 'Enter') {
       handleSearch()
@@ -258,13 +258,13 @@
       <div class="main-left--statics">
         <a href="/categories">
           <div>
-            <span>2</span>
+            <span>4</span>
             <span>分类</span>
           </div>
         </a>
         <a href="/tags">
           <div>
-            <span>3</span>
+            <span>4</span>
             <span>标签</span>
           </div>
         </a>
@@ -327,7 +327,7 @@
       </h5>
       <p class="main-left--subtitle">
         <span>文章数目：</span>
-        <span>4 篇</span>
+        <span>5 篇</span>
       </p>
       <p class="main-left--subtitle">
         <span>最近动态：</span>
@@ -335,7 +335,7 @@
       </p>
       <p class="main-left--subtitle">
         <span>上线时间：</span>
-        <span>7天</span>
+        <span>8天</span>
       </p>
       <p class="main-left--subtitle">
         <span>当前版本：</span>
@@ -670,10 +670,10 @@
 <p>弱口令:   admin&#x2F;admin</p>
 <p>​                                                                             <strong>前台页面</strong></p>
 <p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404080015738.png"></p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><pre><code>  其实对于弱口令挖掘来说,最基础的就是尝试弱口令,当然如果要进行进一步测试的话,爆破密码只是很简单的一只种,还可以通过在各种例如抖音,小红书,甚至QQ群,公众号等进行身份证,学号等信息搜集,当然如果在允许情况下,也可以进行社工获得一些账号密码,尝试进行进一步测试**(切记要合法)**.
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><pre><code>      其实对于弱口令挖掘来说,最基础的就是尝试弱口令,当然如果要进行进一步测试的话,爆破密码只是很简单的一只种,还可以通过在各种例如抖音,小红书,甚至QQ群,公众号等进行身份证,学号等信息搜集,当然如果在允许情况下,也可以进行社工获得一些账号密码,尝试进行进一步测试(切记要合法).
 </code></pre>
 <p>​		当然弱口令也是一种磨练耐心的一种方式吧,我刚开始时,一周内测试了1万多个网站吧,就是为了尝试弱口令,现在想来当时不懂,现在知道了应该是搜索时,还是使用的是别人用过的语法吧,战果可怜也就测出来几十个,能交教育的也没几个.</p>
-<p>​		要说这个是无脑吧,倒也没有,在测试中,因为在测试中,有很多次想放弃,也不知道是什么让我坚持过去了,也见识了各种各样的系统和资产,熟悉了各种资产和厂商的资产,看到一个网站就大概知道是什么系统的,或是什么cms的,大概可能有什么漏洞,为后续技术的提升以及挖到高危漏洞,提供了很多便捷.</p>
+<p>​		要说这个是无脑吧,确实是,但是还是看你是否能坚持下去,因为在测试中,测不出来的时候你会很想放弃,也不知道是什么让我坚持过去了,也见识了各种各样的系统和资产,熟悉了各种资产和厂商的资产,看到一个网站就大概知道是什么系统的,或是什么cms的,大概可能有什么漏洞,为后续技术的提升以及挖到高危漏洞,提供了很多便捷.</p>
 <p>​		其实最大的收获可能就是让我知道了,不提升技术,就会很难挖到漏洞,现在的环境对于小白的要求越来越高了,<strong>上山的路会越来越窄,但路上的人也会越少</strong>.达到一定程度时,也就很容易挖到洞了,报告写到你吐.</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">运气+长期积累+感想敢做+耐心+细心</span><br></pre></td></tr></table></figure>
 
@@ -702,6 +702,11 @@
       </div>
       
         <div class="catelogue catelogue-2">
+          
+            <p>
+              <span>上一篇：</span>
+              <a href="/2024/04/09/如何从小程序到教务系统/">如何从小程序到教务系统</a>
+            </p>
            
           
             <p>
