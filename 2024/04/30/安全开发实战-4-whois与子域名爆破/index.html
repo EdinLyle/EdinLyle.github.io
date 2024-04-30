@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>我的技术与生活——安全开发实战(4)---whois与子域名爆破 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/css/public.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/iconfont.css" />
+  <link rel="stylesheet" href="/css/APlayer.min.css" />
+  <script src="/js/APlayer.min.js"></script>
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/jquery.pjax.min.js"></script>
+
+  <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+  <script>
+    document.title = `我的技术与生活——安全开发实战(4)---whois与子域名爆破`
+  </script>
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<style>
+  .load {
+    width: 100%;
+    height: 100vh;
+    background-color: rgb(37, 35, 40);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 9999;
+  }
+  .load-circle {
+    width: 80px;
+    height: 80px;
+    border: 8px solid orange;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: rotate 1s linear infinite;
+    filter: drop-shadow(0 0 3px orange);
+  }
+  .load-circle-inner {
+    width: 40px;
+    height: 40px;
+    border: 8px solid orange;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: rotate-reverse .5s linear infinite;
+  }
+  .load-text {
+    margin-top: 20px;
+    font-size: 24px;
+    color: orange;
+    display: flex;
+  }
+  .load-text span {
+    margin: 0 5px;
+    text-shadow: 5px 5px 5px orange;
+    animation: move 1s linear infinite;
+  }
+  .load-text span:nth-child(1) {
+    animation-delay: -0.6s;
+  }
+  .load-text span:nth-child(2) {
+    animation-delay: -0.5s;
+  }
+  .load-text span:nth-child(3) {
+    animation-delay: -0.4s;
+  }
+  .load-text span:nth-child(4) {
+    animation-delay: -0.3s;
+  }
+  .load-text span:nth-child(5) {
+    animation-delay: -0.2s;
+  }
+  .load-text span:nth-child(6) {
+    animation-delay: -0.1s;
+  }
+  @keyframes rotate {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes rotate-reverse {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(-360deg); }
+  }
+  @keyframes move {
+    0% { transform: translateY(0%) rotate(0) scale(1); }
+    20% { transform: translateY(20%) rotate(10deg) scale(1.2); }
+    80% { transform: translateY(-10%) rotate(-20deg) scale(.8);}
+    100% { transform: translateY(0) rotate(0) scale(1); }
+  }
+
+  .progress {
+    position: fixed;
+    left: 0; top: 0;
+    width: 0;
+    height: 3px;
+    background-color: green;
+    transition: all cubic-bezier(0.215, 0.610, 0.355, 1) .1s;
+    z-index: 9999;
+  }
+
+  .to-up {
+    animation: toUp .5s 1;
+  }
+  .gray {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 9999;
+    display: none;
+    pointer-events: none;
+    background-color: #000;
+    mix-blend-mode: color;
+  }
+  @keyframes toUp {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0) ; opacity: 1; }
+  }
+</style>
+<body>
+  <div id="load" class="load">
+    <div class="load-circle">
+      <div class="load-circle-inner"></div>
+    </div>
+    <p class="load-text">
+      <span>L</span>
+      <span>O</span>
+      <span>A</span>
+      <span>D</span>
+      <span>I</span>
+      <span>N</span>
+      <span>G</span>
+    </p>
+  </div>
+  <div id="container" class="container w-100 vh-100" style="display: none;">
+    <header class="header">
+  <div class="header-wrapper">
+    <div class="header-left">
+      <div class="header-search">
+        <input id="search-input" type="text" class="header-search--input" placeholder="请输入要检索的文章标题" />
+        <span id="search-btn" class="header-search--icon"><i class="iconfont icon-sousuo"></i></span>
+      </div>
+      <div id="search-layer" class="header-search--layer hidden">
+        <p class="title">
+          <span>以下是搜索内容：</span>
+          <span id="close-layer-btn">关闭</span>
+        </p>
+        <ul>
+        </ul>
+      </div>
+    </div>
+    <div class="header-right">
+      <ul class="header-menu">
+        <li>
+          <a href="http://example.com/">
+            <i class="header-menu--icon iconfont icon-shouye"></i>
+            <span class="header-menu--span">首页</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/log">
+            <i class="header-menu--icon iconfont icon-rizhi"></i>
+            <span class="header-menu--span">日志</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/link">
+            <i class="header-menu--icon iconfont icon-youqinglianjie"></i>
+            <span class="header-menu--span">友情链接</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/about">
+            <i class="header-menu--icon iconfont icon-guanyuwomen"></i>
+            <span class="header-menu--span">关于我</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<script>
+  const ipt = document.querySelector('#search-input')
+  const btn = document.querySelector('#search-btn')
+  const layer = document.querySelector('#search-layer')
+  const posts = JSON.parse(`[{"title":"免杀开发基础(1)","path":"2024/04/12/免杀开发基础-1/"},{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"安全开发实战(2)---域名反查IP","path":"2024/04/30/安全开发实战-2-域名反查IP/"},{"title":"安全开发实战(3)---存活探测与端口扫描","path":"2024/04/30/安全开发实战-3-存活探测与端口扫描/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"安全开发实战(5)---fofa进行漏洞poc的信息收集","path":"2024/04/30/安全开发实战-5-fofa进行漏洞poc的信息收集/"},{"title":"安全开发实战(4)---whois与子域名爆破","path":"2024/04/30/安全开发实战-4-whois与子域名爆破/"},{"title":"某小学AK,SK泄露导致横向到云主机控制台","path":"2024/04/16/某小学AK-SK泄露导致横向到云主机控制台/"},{"title":"某音矩阵云混剪系统V2.3.0代码审计(1)","path":"2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"},{"title":"网安开发实战(1)-Cdn","path":"2024/04/16/网安开发实战-1-Cdn/"}]`)
+  ipt.addEventListener('keyup', e => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
+  })
+  btn.addEventListener('click', () => {
+    handleSearch()
+  })
+
+  document.querySelector('#close-layer-btn').addEventListener('click', () => {
+    layer.classList.toggle('hidden')
+  })
+
+  function handleSearch() {
+    if (ipt.value.trim() === '') {
+      return
+    }
+    let html = ''
+    const targetPosts = posts.filter(post => post.title.includes(ipt.value))
+    targetPosts.forEach(post => {
+      html += `
+        <li>
+          <div>
+            <a href="/${post.path}">${post.title.replace(new RegExp(ipt.value), `<span>${ipt.value}</span>`)}</a>
+          </div>
+          <img src="${post.cover || '/imgs/default-cover.webp' }" />
+        </li>
+      `
+    })
+    if (html.trim () === '') {
+      html += '<p class="empty">没有搜索到内容</p>'
+    }
+    layer.querySelector('ul').innerHTML = html
+    layer.classList.remove('hidden')
+  }
+</script> 
+    <section id="main" class="main">
+      <div class="main-left-wrapper">
+<div class="main-left">
+  <div class="main-left--block">
+    <div class="main-left--info">
+      <img src="/imgs/avatar.jpg"" class="main-left--avatar" />
+      <div class="main-left--intro">
+        <p class="main-left--name">小鱼</p>
+        <div class="main-left--tags">
+          <span class="main-left--tag">渗透测试</span>
+          <span class="main-left--tag">善于观察</span>
+        </div>
+      </div>
+    </div>
+  
+    <div>
+      <div class="main-left--motto">
+        <p>“花有重开日，人无再少年”</p>
+        <p>“一个简单普通的男孩”</p>
+      </div>
+      <div class="main-left--github">
+        <span class="line"></span>
+        <a target="_blank" rel="noopener" href="https://gitee.com/ccshyi"><i class="logo iconfont icon-github-fill"></i></a>
+        <span class="line"></span>
+      </div>
+      <div class="main-left--statics">
+        <a href="/categories">
+          <div>
+            <span>6</span>
+            <span>分类</span>
+          </div>
+        </a>
+        <a href="/tags">
+          <div>
+            <span>6</span>
+            <span>标签</span>
+          </div>
+        </a>
+        <a href="/archives">
+          <div>
+            <span>1 </span>
+            <span>归档</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-left--block">
+    <ul class="main-left--menu">
+      
+        <li>
+          <a href="/">
+            <span class="header-menu--span">小站首页</span>
+            <i class="header-menu--icon iconfont icon-shouye"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/log">
+            <span class="header-menu--span">个人日志</span>
+            <i class="header-menu--icon iconfont icon-rizhi"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/link">
+            <span class="header-menu--span">友情链接</span>
+            <i class="header-menu--icon iconfont icon-youqinglianjie"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/about">
+            <span class="header-menu--span">关于自己</span>
+            <i class="header-menu--icon iconfont icon-guanyuwomen"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/tools">
+            <span class="header-menu--span">我的工具</span>
+            <i class="header-menu--icon iconfont icon-gongju"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="main-left--block">
+    <div class="main-left--site">
+      <h5 class="main-left--title">
+        <span>站点信息</span>
+        <i class="iconfont icon-zhandian"></i>
+      </h5>
+      <p class="main-left--subtitle">
+        <span>文章数目：</span>
+        <span>13 篇</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>最近动态：</span>
+        <span>今天</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>上线时间：</span>
+        <span>29天</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>当前版本：</span>
+        <span>v1.0.2</span>
+      </p>
+    </div>
+  </div>
+</div></div>
+      <div id="main-container" class="main-container">
+
+
+  <link rel="stylesheet" href="/css/partial/article.css" />
+
+<div class="article-container">
+  <div class="article">
+    <h1 class="article-title">安全开发实战(4)---whois与子域名爆破</h1>
+    <div class="article-info">
+      <div class="article-info--item">
+        <div class="article-info--info">
+          
+          <div class="article-info--categories">
+            <span>分类：</span>
+            <a class="category-link" href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/">安全开发</a>
+          </div>
+          
+          
+          <div class="article-info--tags">
+            <span>标签：</span>
+            <a class="tag-link" href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" rel="tag">渗透测试</a>
+          </div>
+          
+          <p class="article-info--date">日期：2024-04-30 15:06:29</p>
+        </div>
+        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
+      </div>
+    </div>
+    <article class="article-content markdown-body">
+      <p>[TOC]</p>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><h2 id="whois查询"><a href="#whois查询" class="headerlink" title="whois查询"></a>whois查询</h2><blockquote>
+<p>​    Whois 查询是一种用于获取有关互联网域名注册信息的公共查询服务。当注册一个域名时，必须提供一些个人或组织信息，例如姓名、电子邮件地址、联系电话等。这些信息通常是公开的，可以通过 Whois 查询来获取。</p>
+<p>​    在渗透测试中，Whois 查询可以我们收集目标组织的关键信息。通过查询目标组织的域名注册信息，我们基本可以获得以下信息：</p>
+<ol>
+<li><strong>组织联系信息</strong>：包括名称、地址、电话号码和电子邮件地址。这些信息可以用于建立联系、进行社会工程攻击或者其他类型的攻击。</li>
+<li><strong>域名到期日期</strong>：了解域名何时到期可以帮助我们预测目标可能面临的安全风险。例如，如果域名即将到期，组织可能会忽略一些安全措施，使其易受攻击。</li>
+<li><strong>DNS 服务器信息</strong>：这些信息可以揭示目标使用的 DNS 提供商，有时甚至可以提供与该组织相关的其他域名。</li>
+<li><strong>域名所有者历史记录</strong>：通过查看域名所有者的历史记录，我们可以了解组织背后的变化、合作伙伴关系或其他潜在的信息。</li>
+</ol>
+<p>​    总的来说:我们可以将这些信息用于制定针对目标组织的更有针对性的攻击策略，或者作为侦察阶段的一部分，以帮助了解目标环境。</p>
+</blockquote>
+<h2 id="子域名"><a href="#子域名" class="headerlink" title="子域名"></a>子域名</h2><blockquote>
+<p>​    子域名是指在一个域名下面的更小的域名。通常，一个域名可以有多个子域名，每个子域名都可以有自己的主机或服务。例如，在域名example.com下，可以有子域名如<a target="_blank" rel="noopener" href="http://www.example.com、mail.example.com等,其实就是前面的信息在换./">www.example.com、mail.example.com等,其实就是前面的信息在换。</a> </p>
+</blockquote>
+<h2 id="子域名爆破"><a href="#子域名爆破" class="headerlink" title="子域名爆破"></a>子域名爆破</h2><blockquote>
+<p>​    子域名爆破是一种渗透测试技术，旨在通过尝试各种可能的子域名来发现目标域名下存在的子域名。我们可以使用自动化工具或脚本来进行子域名爆破，工具通常会生成可能的子域名列表，并尝试通过DNS查询确定哪些子域名是有效的。</p>
+<p>​    在渗透测试中，子域名爆破可以帮助我们发现目标可能忽略或未公开的子域名。这些子域名可能包含敏感信息、测试环境、未经授权的服务或其他潜在的安全风险。通过发现这些子域名，我们可以扩大对目标组织的攻击面，并进一步进行深入的渗透测试活动。</p>
+</blockquote>
+<h1 id="1-4-whois查询"><a href="#1-4-whois查询" class="headerlink" title="1.4 whois查询"></a>1.4 whois查询</h1><h2 id="方式1"><a href="#方式1" class="headerlink" title="方式1:"></a>方式1:</h2><p>​            利用python第三方库python-whois查询,没有这个库,需要安装一下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install python-whois</span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>   这个没什么技术含量,直接导入库进行利用就好了,可以看出返回了很多信息,当然,渗透中关注的是其中的<strong>获取到域名注册者的联系方式、注册时间、DNS服务器信息等</strong>,需要从这个获取的信息中进行提取关键信息即可,有时间将其完善一下.</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> whois <span class="keyword">import</span> whois</span><br><span class="line">data = whois(<span class="string">&#x27;www.baidu.com&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(data)</span><br></pre></td></tr></table></figure>
+
+
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301509588.png"></p>
+<h2 id="方式2"><a href="#方式2" class="headerlink" title="方式2:"></a>方式2:</h2><blockquote>
+<p>​    通过爬虫将一些查询whois的网站(阿里,爱站)爬取下来,这里因为要写针对某个网站的爬取,还是比较麻烦的,不如使用现成的浏览器插件superSearchPlus工具效率更快,就不写了.</p>
+</blockquote>
+<h1 id="1-5-子域名查询"><a href="#1-5-子域名查询" class="headerlink" title="1.5 子域名查询"></a>1.5 子域名查询</h1><h2 id="方式1-子域名爆破"><a href="#方式1-子域名爆破" class="headerlink" title="方式1:子域名爆破"></a>方式1:子域名爆破</h2><blockquote>
+<p>​    为什么要进行子域名爆破,使用第三方工具或是在线查询不是很好吗,作为一个渗透人员,要尽量避开大家都在使用的工具和字典,那么子域名爆破是最后也是当下最好的方式了,资产测绘平台也有查询不到的资产(未收录),当然也可以使用子域名爆破工具,都是可以的,唯一点就是建立自己的爆破字典,能够获取别人获取不到的资产.</p>
+</blockquote>
+<h3 id="1-5-1-One"><a href="#1-5-1-One" class="headerlink" title="1.5.1 One"></a>1.5.1 One</h3><blockquote>
+<p>   利用原理,是通过将字典中的字符读取出来,然后与主域名进行拼接,然后使用socket的方法查询ip地址,如果查询出ip地址,证明这个子域名存在,下面有百度做个示例.</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方式1: 利用字段爆破进行查询</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="comment"># 子域名查询</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">subdomain_collect</span>():</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;[+] 正在收集子域名信息...&#x27;</span>)  <span class="comment"># 这个是我后面加的</span></span><br><span class="line">    <span class="keyword">for</span> sub <span class="keyword">in</span> <span class="built_in">open</span>(<span class="string">&#x27;dic.txt&#x27;</span>, <span class="string">&#x27;r&#x27;</span>):</span><br><span class="line">        sub = sub.replace(<span class="string">&#x27;\n&#x27;</span>, <span class="string">&#x27;&#x27;</span>)  <span class="comment"># 将每个子域名后的换行符替换为空</span></span><br><span class="line">        url = <span class="string">f&#x27;<span class="subst">&#123;sub&#125;</span>.baidu.com&#x27;</span></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            ip = socket.gethostbyname(url)</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&#x27;[+] <span class="subst">&#123;url&#125;</span> -&gt; <span class="subst">&#123;ip&#125;</span>&#x27;</span>)</span><br><span class="line">            time.sleep(<span class="number">0.5</span>)  <span class="comment"># 避免因为查询过快而导致ip被封</span></span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">            <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    subdomain_collect()</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301509860.png"></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301509493.png"></p>
+<h3 id="1-5-2-Two"><a href="#1-5-2-Two" class="headerlink" title="1.5.2 Two"></a>1.5.2 Two</h3><blockquote>
+<p>   因为写批量收集的时候需要进行测试,所以根据上面的返回bing和百度的子域名的真实数据混合不存在的子域名制作一个小字典进行测试,因为本次代码,写出后没有出现任何问题,一次成功,所以也就没有最后的整合部分了.</p>
+</blockquote>
+<blockquote>
+<p>   当然在运行的结果中也可以发现,出现多个域名对应同一个ip,因为本来百度和bing都使用了cdn技术,所以说很正常,后面也需要将代码改进,或是写一个将子域名反查ip相同的子域名进行去重.</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方式1: 利用字典爆破进行查询</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="comment"># 子域名查询</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">subdomain_collect</span>(<span class="params">domain</span>):</span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">f&#x27;sub_<span class="subst">&#123;domain&#125;</span>.txt&#x27;</span>, <span class="string">&#x27;a+&#x27;</span>) <span class="keyword">as</span> w:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;[+] 正在收集<span class="subst">&#123;domain&#125;</span>子域名的信息...&#x27;</span>)</span><br><span class="line">        w.write(<span class="string">f&#x27;[+] 收集<span class="subst">&#123;domain&#125;</span>子域名的信息如下:\n&#x27;</span>)</span><br><span class="line">        <span class="keyword">for</span> sub <span class="keyword">in</span> <span class="built_in">open</span>(<span class="string">&#x27;test.txt&#x27;</span>, <span class="string">&#x27;r&#x27;</span>):</span><br><span class="line">            sub = sub.replace(<span class="string">&#x27;\n&#x27;</span>, <span class="string">&#x27;&#x27;</span>)  <span class="comment"># 将每个子域名后的换行符替换为空</span></span><br><span class="line">            url = <span class="string">f&#x27;<span class="subst">&#123;sub&#125;</span>.<span class="subst">&#123;domain&#125;</span>&#x27;</span></span><br><span class="line">            <span class="keyword">try</span>:</span><br><span class="line">                ip = socket.gethostbyname(url)</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&#x27;[+] <span class="subst">&#123;url&#125;</span> -&gt; <span class="subst">&#123;ip&#125;</span>&#x27;</span>)</span><br><span class="line">                w.write(<span class="string">f&#x27;[+] <span class="subst">&#123;url&#125;</span> -&gt; <span class="subst">&#123;ip&#125;</span>\n&#x27;</span>)</span><br><span class="line">                time.sleep(<span class="number">0.5</span>)</span><br><span class="line">            <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">                <span class="keyword">pass</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    <span class="keyword">for</span> domain <span class="keyword">in</span> <span class="built_in">open</span>(<span class="string">&#x27;domain.txt&#x27;</span>, <span class="string">&#x27;r&#x27;</span>):</span><br><span class="line">        domain = domain.replace(<span class="string">&#x27;\n&#x27;</span>, <span class="string">&#x27;&#x27;</span>)  <span class="comment"># 将每个取出的域名后的换行符替换为空</span></span><br><span class="line">        subdomain_collect(domain)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>测试小字典</p>
+<p><strong>test.txt</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">a</span><br><span class="line">ab</span><br><span class="line">a2</span><br><span class="line">abcd</span><br><span class="line">abc</span><br><span class="line">city</span><br><span class="line">a1</span><br><span class="line">cc</span><br><span class="line">a3</span><br><span class="line">josn</span><br><span class="line">blog1</span><br><span class="line">pmt</span><br><span class="line">asd</span><br><span class="line">cha</span><br><span class="line">a4</span><br><span class="line">version</span><br><span class="line">okay</span><br><span class="line">aa</span><br><span class="line">ab</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301510691.png"></p>
+<p> <strong>domain.txt</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">baidu.com</span><br><span class="line">bing.com</span><br></pre></td></tr></table></figure>
+
+
+
+<p>运行完代码后生成的两个子域名文件:</p>
+<p><strong>sub_baidu.com.txt</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[+] 收集baidu.com子域名的信息如下:</span><br><span class="line">[+] a.baidu.com -&gt; <span class="number">112.34</span><span class="number">.113</span>.xxx</span><br><span class="line">[+] ab.baidu.com -&gt; <span class="number">39.156</span><span class="number">.66</span>.xxx</span><br><span class="line">[+] abc.baidu.com -&gt; <span class="number">36.155</span><span class="number">.132</span>.xxx</span><br><span class="line">[+] city.baidu.com -&gt; <span class="number">112.34</span><span class="number">.111</span>.xxx</span><br><span class="line">[+] cc.baidu.com -&gt; <span class="number">112.34</span><span class="number">.111</span>.xxx</span><br><span class="line">[+] cha.baidu.com -&gt; <span class="number">163.177</span><span class="number">.17</span>.xxx</span><br><span class="line">[+] ab.baidu.com -&gt; <span class="number">39.156</span><span class="number">.66</span>.xxx</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>sub_bing.com.txt</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[+] 收集bing.com子域名的信息如下:</span><br><span class="line">[+] a.bing.com -&gt; <span class="number">204.79</span><span class="number">.197</span>.xxx</span><br><span class="line">[+] ab.bing.com -&gt; <span class="number">13.107</span><span class="number">.21</span>.xxx</span><br><span class="line">[+] a2.bing.com -&gt; <span class="number">223.119</span><span class="number">.248</span>.xx</span><br><span class="line">[+] abcd.bing.com -&gt; <span class="number">204.79</span><span class="number">.197</span>.xxx</span><br><span class="line">[+] abc.bing.com -&gt; <span class="number">13.107</span><span class="number">.21</span>.xxx</span><br><span class="line">[+] city.bing.com -&gt; <span class="number">13.107</span><span class="number">.21</span>.xxx</span><br><span class="line">[+] a1.bing.com -&gt; <span class="number">223.119</span><span class="number">.248</span>.xx</span><br><span class="line">[+] cc.bing.com -&gt; <span class="number">13.107</span><span class="number">.21</span>.xxx</span><br><span class="line">[+] a3.bing.com -&gt; <span class="number">223.119</span><span class="number">.248</span>.xx</span><br><span class="line">[+] josn.bing.com -&gt; <span class="number">204.79</span><span class="number">.197</span>.xxx</span><br><span class="line">[+] blog1.bing.com -&gt; <span class="number">13.107</span><span class="number">.21</span>.xxx</span><br><span class="line">[+] pmt.bing.com -&gt; <span class="number">13.107</span><span class="number">.21</span>.xxx</span><br><span class="line">[+] asd.bing.com -&gt; <span class="number">13.107</span><span class="number">.21</span>.xxx</span><br><span class="line">[+] cha.bing.com -&gt; <span class="number">204.79</span><span class="number">.197</span>.xxx</span><br><span class="line">[+] a4.bing.com -&gt; <span class="number">223.119</span><span class="number">.248</span>.xxx</span><br><span class="line">[+] version.bing.com -&gt; <span class="number">13.107</span><span class="number">.21</span>.xxx</span><br><span class="line">[+] okay.bing.com -&gt; <span class="number">13.107</span><span class="number">.21</span>.xxx</span><br><span class="line">[+] aa.bing.com -&gt; <span class="number">13.107</span><span class="number">.21</span>.xxx</span><br><span class="line">[+] ab.bing.com -&gt; <span class="number">13.107</span><span class="number">.21</span>.xxx</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="方式2-其他方式"><a href="#方式2-其他方式" class="headerlink" title="方式2:其他方式"></a>方式2:其他方式</h2><p>通过子域名查询或是子域名枚举工具</p>
+<blockquote>
+<p>   当然这种方式相信大家初学时都会使用通过将一些子域名查询网站,查询的子域名将其爬取下来,写到txt文本中火是csv中,使用常见工具进行枚举其实根本也是通过调用一些资产测绘平台的api或是工具自带的字典进行暴力枚举,根本上和我使用的这个基本上差不多,大家都在用,用烂了,很难搜集到别人搜集不到的资产,说到底,自己总结的别人没有的字典,才能发现新的大陆,这里我就不写了,大佬们写了很多工具和脚本调用资产测绘平台直接使用就可以了.</p>
+</blockquote>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><blockquote>
+<p>​    本篇文章也是对上一篇的进一步利用吧,在对渗透过程中,还是需要对所属域名的所有者的信息进行一定的收集的,帮助我们制作对应的字典进行一些登录界面的爆破,当然在渗透过程中,主域名都是比较难啃的骨头,需要我们对子域名进行信息收集,然后进行进一步的利用.</p>
+</blockquote>
+
+    </article>
+    
+    <div class="read-nums">
+      <!-- id 将作为查询条件 -->
+      <span id="2024/04/30/安全开发实战-4-whois与子域名爆破/" class="leancloud_visitors" data-flag-title="Your Article Title">
+        <em class="post-meta-item-text">浏览量</em>
+        <i class="leancloud-visitors-count"></i>
+      </span>
+    </div>
+    <div class="comments-intro">
+      <h2>评论区</h2>
+      <p>欢迎你留下宝贵的意见，昵称输入QQ号会显示QQ头像哦~</p>
+    </div>
+    <div id="vcomments" class="vcomments"></div>
+    
+  </div>
+  <div class="article-catelogue">
+    <div class="article-catelogue--wrapper">
+      <div class="catelogue catelogue-1">
+        <h3>目录</h3>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#whois%E6%9F%A5%E8%AF%A2"><span class="toc-number">1.1.</span> <span class="toc-text">whois查询</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%90%E5%9F%9F%E5%90%8D"><span class="toc-number">1.2.</span> <span class="toc-text">子域名</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%90%E5%9F%9F%E5%90%8D%E7%88%86%E7%A0%B4"><span class="toc-number">1.3.</span> <span class="toc-text">子域名爆破</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#1-4-whois%E6%9F%A5%E8%AF%A2"><span class="toc-number">2.</span> <span class="toc-text">1.4 whois查询</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F1"><span class="toc-number">2.1.</span> <span class="toc-text">方式1:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F2"><span class="toc-number">2.2.</span> <span class="toc-text">方式2:</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#1-5-%E5%AD%90%E5%9F%9F%E5%90%8D%E6%9F%A5%E8%AF%A2"><span class="toc-number">3.</span> <span class="toc-text">1.5 子域名查询</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F1-%E5%AD%90%E5%9F%9F%E5%90%8D%E7%88%86%E7%A0%B4"><span class="toc-number">3.1.</span> <span class="toc-text">方式1:子域名爆破</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-1-One"><span class="toc-number">3.1.1.</span> <span class="toc-text">1.5.1 One</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-2-Two"><span class="toc-number">3.1.2.</span> <span class="toc-text">1.5.2 Two</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F2-%E5%85%B6%E4%BB%96%E6%96%B9%E5%BC%8F"><span class="toc-number">3.2.</span> <span class="toc-text">方式2:其他方式</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol>
+      </div>
+      
+        <div class="catelogue catelogue-2">
+          
+            <p>
+              <span>上一篇：</span>
+              <a href="/2024/04/30/安全开发实战-5-fofa进行漏洞poc的信息收集/">安全开发实战(5)---fofa进行漏洞poc的信息收集</a>
+            </p>
+           
+          
+            <p>
+              <span>下一篇</span>
+              <a href="/2024/04/30/安全开发实战-3-存活探测与端口扫描/">安全开发实战(3)---存活探测与端口扫描</a>
+            </p>
+          
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // var定义，避免pjax重新进来造成的重复声明错误
+  var config = JSON.parse('{"enable":true,"appId":"Pf8zCXGEH1qsprnWfikVVujL-gzGzoHsz","appKey":"qOqoiUHhH1TGtLRUYURkLRQX","placeholder":"请留下你宝贵的意见吧~","meta":["nick"],"recordIP":true,"visitor":true,"enableQQ":true}')
+  new Valine({
+    el: '#vcomments',
+    appId: config.appId,
+    appKey: config.appKey,
+    placeholder: config.placeholder,
+    meta: config.meta,
+    recordIP: config.recordIP,
+    visitor: config.visitor,
+    enableQQ: config.enableQQ,
+    path: '2024/04/30/安全开发实战-4-whois与子域名爆破/'
+  })
+</script>
+
+
+<script>
+  $(document).on('pjax:complete', function() {
+    const tocs = document.querySelector('.toc')
+    const links = tocs ? tocs.querySelectorAll('a') : []
+    links.forEach(link => {
+      link.addEventListener('click', e => {
+        const href = decodeURIComponent(e.href)
+        href.search(/#(.*)/)
+        const id = RegExp.$1
+        const target = document.querySelector('#' + id)
+        const top = target.offsetTop
+        document.documentElement.scrollTo({
+          top: top - 100,
+          behavior: 'smooth'
+        })
+        e.preventDefault()
+      })
+    })
+  })
+</script> 
+
+</div>
+      <div class="main-right-wrapper"><div class="main-right">
+  <div class="main-right--board">
+    <div class="main-right--title">
+      <h5>公告栏</h5>
+      <i class="iconfont icon-gonggao"></i>
+    </div>
+    <div class="main-right--content">
+      Hello~大噶好。唔系小鱼，欢迎你们来到我的博客小站，希望能在这里收获到有用的东西哦！ 
+    </div>
+  </div>
+
+  <div id="aplayer" class="main-right--music"></div>
+
+  <div class="operate-items">
+    <div class="operate-item backtop">
+      <i class="iconfont icon-huidaodingbu"></i>
+      <span>回到顶部</span>
+    </div>
+    
+    <div class="operate-item turn-comment hidden">
+      <i class="iconfont icon-pinglun"></i>
+      <span>查看评论</span>
+    </div>
+    
+  </div>
+
+  <div class="main-right--site">
+    <div class="main-right--power">
+      <p>Power By <a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/">Hexo</a>.</p>
+      <p>Theme：<a target="_blank" rel="noopener" href="https://github.com/Aizener/hexo-theme-cola">Cola.</a></p>
+    </div>
+    <p class="main-right--refer"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/#/Integrated/index">暂无</a> </p>
+  </div>
+</div>
+
+<script>
+  function setOperateItem () {
+    const reg = /\d{4}\/\d{2}\/\d{2}\/.+/
+    const path = location.pathname
+    const operateDom = document.querySelector('.main-right .operate-items')
+    const commentDom = document.querySelector('.turn-comment')
+    const cateloguDom = document.querySelector('.article-catelogue > .article-catelogue--wrapper');
+
+    if (commentDom) {
+      if (reg.test(path) || path.match(/\/log\/.+/)) {
+        commentDom.classList.remove('hidden')
+        const newDom = operateDom.cloneNode(true);
+        const _backtopDom = newDom.querySelector('.backtop');
+        const _commentDom = newDom.querySelector('.turn-comment');
+        _backtopDom.addEventListener('click', () => backTopEvent());
+        _commentDom.addEventListener('click', () => commentDomEvent());
+        cateloguDom.appendChild(newDom);
+      } else {
+        commentDom.classList.add('hidden')
+      }
+    }
+  }
+
+  setOperateItem()
+  const musics = JSON.parse(`[{"name":"安河桥","artist":"宋冬野","url":"http://ting6.yymp3.net:82/new25/songdongye/11.mp3","cover":"https://img2.baidu.com/it/u=1260056724,1076343118&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"},{"name":"卡布达","artist":"暂无","url":"music/kabuda.mp3","cover":"https://img2.baidu.com/it/u=705831265,2862720033&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"}]`)
+  const ap = new APlayer({
+    container: document.querySelector('#aplayer'),
+    audio: musics,
+  })
+
+  $(document).on('pjax:complete', function() {
+    setOperateItem()
+  })
+
+  document.querySelector('.backtop').addEventListener('click', () => {
+    backTopEvent();
+  })
+  const dom = document.querySelector('.turn-comment')
+  dom && dom.addEventListener('click', () => {
+    commentDomEvent();
+  })
+
+  function backTopEvent() {
+    document.documentElement.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+
+  function commentDomEvent() {
+    const commentDom = document.querySelector('.comments-intro')
+    if (!commentDom) return
+    const top = commentDom.offsetTop, height = commentDom.offsetHeight
+    document.documentElement.scrollTo({
+      top: top - 2 * height,
+      behavior: 'smooth'
+    })
+  }
+</script></div>
+    </section>
+  </div>
+  <div id="progress" class="progress"></div>
+  <div id="gray" class="gray"></div>
+
+  <script>
+    function initScroll () {
+      document.addEventListener('scroll', () => {
+        const doc = document.documentElement
+        const scrollTop = doc.scrollTop
+        const pageHeight = doc.offsetHeight
+        const clientHeight = doc.clientHeight
+        const ratio = scrollTop / (pageHeight - clientHeight)
+        const progress = document.querySelector('#progress')
+        const avatarImg = document.querySelector('.main-left--avatar')
+        progress.style.width = (100 * ratio) + '%'
+        avatarImg.style.transform = `rotate(${360 * ratio}deg)`
+      })
+    }
+
+    const rootPath = "/"
+
+    const checkAndSetArticlePageLayout = () => {
+      const path = location.pathname.replace(rootPath, '');
+      if (
+        /^\/?\d{4}\/\d{2}\/\d{2}\/.*/.test(path) ||
+        /^log\/.+/.test(path)
+      ) {
+        $('.main-container, .main-right, .main-right-wrapper').addClass('is-article')
+      } else {
+        $('.main-container, .main-right, .main-right-wrapper').removeClass('is-article')
+      }
+    }
+
+    const gray = "none"
+    const setGrayStyle = () => {
+      if (gray === 'none') {
+        return
+      } else if (gray === 'index') {
+        location.pathname === '/' ? $('#gray').show() : $('#gray').hide()
+      } else if (gray === 'all') {
+        $('#gray').show()
+      }
+    }
+    setGrayStyle()
+
+
+    window.onload = function () {
+      checkAndSetArticlePageLayout()
+      setTimeout(() => {
+        $('#load').slideUp()
+        $('#container').slideToggle()
+        setTimeout(() => {
+          initScroll();
+        }, 500)
+      }, 500)
+    }
+    
+    let status = 0
+    // 对所有链接跳转事件绑定pjax容器container
+    $(document).pjax('a[target!=_blank]', '#main-container', {
+      container: '#main-container',
+      fragment: '#main-container',
+      timeout: 8000
+    })
+
+    $(document).on('pjax:start', function() {
+    })
+    $(document).on('pjax:complete', function() {
+      status = 0
+      $('.main-container').addClass('to-up').on('animationend', function() {
+        $(this).removeClass('to-up')
+      })
+      setGrayStyle()
+      checkAndSetArticlePageLayout()
+    })
+    $(document).on('pjax:popstate', function() {
+      status = -1
+      checkAndSetArticlePageLayout()
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>我的技术与生活——安全开发实战(5)---fofa进行漏洞poc的信息收集 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/css/public.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/iconfont.css" />
+  <link rel="stylesheet" href="/css/APlayer.min.css" />
+  <script src="/js/APlayer.min.js"></script>
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/jquery.pjax.min.js"></script>
+
+  <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+  <script>
+    document.title = `我的技术与生活——安全开发实战(5)---fofa进行漏洞poc的信息收集`
+  </script>
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<style>
+  .load {
+    width: 100%;
+    height: 100vh;
+    background-color: rgb(37, 35, 40);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 9999;
+  }
+  .load-circle {
+    width: 80px;
+    height: 80px;
+    border: 8px solid orange;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: rotate 1s linear infinite;
+    filter: drop-shadow(0 0 3px orange);
+  }
+  .load-circle-inner {
+    width: 40px;
+    height: 40px;
+    border: 8px solid orange;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: rotate-reverse .5s linear infinite;
+  }
+  .load-text {
+    margin-top: 20px;
+    font-size: 24px;
+    color: orange;
+    display: flex;
+  }
+  .load-text span {
+    margin: 0 5px;
+    text-shadow: 5px 5px 5px orange;
+    animation: move 1s linear infinite;
+  }
+  .load-text span:nth-child(1) {
+    animation-delay: -0.6s;
+  }
+  .load-text span:nth-child(2) {
+    animation-delay: -0.5s;
+  }
+  .load-text span:nth-child(3) {
+    animation-delay: -0.4s;
+  }
+  .load-text span:nth-child(4) {
+    animation-delay: -0.3s;
+  }
+  .load-text span:nth-child(5) {
+    animation-delay: -0.2s;
+  }
+  .load-text span:nth-child(6) {
+    animation-delay: -0.1s;
+  }
+  @keyframes rotate {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes rotate-reverse {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(-360deg); }
+  }
+  @keyframes move {
+    0% { transform: translateY(0%) rotate(0) scale(1); }
+    20% { transform: translateY(20%) rotate(10deg) scale(1.2); }
+    80% { transform: translateY(-10%) rotate(-20deg) scale(.8);}
+    100% { transform: translateY(0) rotate(0) scale(1); }
+  }
+
+  .progress {
+    position: fixed;
+    left: 0; top: 0;
+    width: 0;
+    height: 3px;
+    background-color: green;
+    transition: all cubic-bezier(0.215, 0.610, 0.355, 1) .1s;
+    z-index: 9999;
+  }
+
+  .to-up {
+    animation: toUp .5s 1;
+  }
+  .gray {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 9999;
+    display: none;
+    pointer-events: none;
+    background-color: #000;
+    mix-blend-mode: color;
+  }
+  @keyframes toUp {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0) ; opacity: 1; }
+  }
+</style>
+<body>
+  <div id="load" class="load">
+    <div class="load-circle">
+      <div class="load-circle-inner"></div>
+    </div>
+    <p class="load-text">
+      <span>L</span>
+      <span>O</span>
+      <span>A</span>
+      <span>D</span>
+      <span>I</span>
+      <span>N</span>
+      <span>G</span>
+    </p>
+  </div>
+  <div id="container" class="container w-100 vh-100" style="display: none;">
+    <header class="header">
+  <div class="header-wrapper">
+    <div class="header-left">
+      <div class="header-search">
+        <input id="search-input" type="text" class="header-search--input" placeholder="请输入要检索的文章标题" />
+        <span id="search-btn" class="header-search--icon"><i class="iconfont icon-sousuo"></i></span>
+      </div>
+      <div id="search-layer" class="header-search--layer hidden">
+        <p class="title">
+          <span>以下是搜索内容：</span>
+          <span id="close-layer-btn">关闭</span>
+        </p>
+        <ul>
+        </ul>
+      </div>
+    </div>
+    <div class="header-right">
+      <ul class="header-menu">
+        <li>
+          <a href="http://example.com/">
+            <i class="header-menu--icon iconfont icon-shouye"></i>
+            <span class="header-menu--span">首页</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/log">
+            <i class="header-menu--icon iconfont icon-rizhi"></i>
+            <span class="header-menu--span">日志</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/link">
+            <i class="header-menu--icon iconfont icon-youqinglianjie"></i>
+            <span class="header-menu--span">友情链接</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/about">
+            <i class="header-menu--icon iconfont icon-guanyuwomen"></i>
+            <span class="header-menu--span">关于我</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<script>
+  const ipt = document.querySelector('#search-input')
+  const btn = document.querySelector('#search-btn')
+  const layer = document.querySelector('#search-layer')
+  const posts = JSON.parse(`[{"title":"免杀开发基础(1)","path":"2024/04/12/免杀开发基础-1/"},{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"安全开发实战(2)---域名反查IP","path":"2024/04/30/安全开发实战-2-域名反查IP/"},{"title":"安全开发实战(3)---存活探测与端口扫描","path":"2024/04/30/安全开发实战-3-存活探测与端口扫描/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"安全开发实战(5)---fofa进行漏洞poc的信息收集","path":"2024/04/30/安全开发实战-5-fofa进行漏洞poc的信息收集/"},{"title":"安全开发实战(4)---whois与子域名爆破","path":"2024/04/30/安全开发实战-4-whois与子域名爆破/"},{"title":"某小学AK,SK泄露导致横向到云主机控制台","path":"2024/04/16/某小学AK-SK泄露导致横向到云主机控制台/"},{"title":"某音矩阵云混剪系统V2.3.0代码审计(1)","path":"2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"},{"title":"网安开发实战(1)-Cdn","path":"2024/04/16/网安开发实战-1-Cdn/"}]`)
+  ipt.addEventListener('keyup', e => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
+  })
+  btn.addEventListener('click', () => {
+    handleSearch()
+  })
+
+  document.querySelector('#close-layer-btn').addEventListener('click', () => {
+    layer.classList.toggle('hidden')
+  })
+
+  function handleSearch() {
+    if (ipt.value.trim() === '') {
+      return
+    }
+    let html = ''
+    const targetPosts = posts.filter(post => post.title.includes(ipt.value))
+    targetPosts.forEach(post => {
+      html += `
+        <li>
+          <div>
+            <a href="/${post.path}">${post.title.replace(new RegExp(ipt.value), `<span>${ipt.value}</span>`)}</a>
+          </div>
+          <img src="${post.cover || '/imgs/default-cover.webp' }" />
+        </li>
+      `
+    })
+    if (html.trim () === '') {
+      html += '<p class="empty">没有搜索到内容</p>'
+    }
+    layer.querySelector('ul').innerHTML = html
+    layer.classList.remove('hidden')
+  }
+</script> 
+    <section id="main" class="main">
+      <div class="main-left-wrapper">
+<div class="main-left">
+  <div class="main-left--block">
+    <div class="main-left--info">
+      <img src="/imgs/avatar.jpg"" class="main-left--avatar" />
+      <div class="main-left--intro">
+        <p class="main-left--name">小鱼</p>
+        <div class="main-left--tags">
+          <span class="main-left--tag">渗透测试</span>
+          <span class="main-left--tag">善于观察</span>
+        </div>
+      </div>
+    </div>
+  
+    <div>
+      <div class="main-left--motto">
+        <p>“花有重开日，人无再少年”</p>
+        <p>“一个简单普通的男孩”</p>
+      </div>
+      <div class="main-left--github">
+        <span class="line"></span>
+        <a target="_blank" rel="noopener" href="https://gitee.com/ccshyi"><i class="logo iconfont icon-github-fill"></i></a>
+        <span class="line"></span>
+      </div>
+      <div class="main-left--statics">
+        <a href="/categories">
+          <div>
+            <span>6</span>
+            <span>分类</span>
+          </div>
+        </a>
+        <a href="/tags">
+          <div>
+            <span>6</span>
+            <span>标签</span>
+          </div>
+        </a>
+        <a href="/archives">
+          <div>
+            <span>1 </span>
+            <span>归档</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-left--block">
+    <ul class="main-left--menu">
+      
+        <li>
+          <a href="/">
+            <span class="header-menu--span">小站首页</span>
+            <i class="header-menu--icon iconfont icon-shouye"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/log">
+            <span class="header-menu--span">个人日志</span>
+            <i class="header-menu--icon iconfont icon-rizhi"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/link">
+            <span class="header-menu--span">友情链接</span>
+            <i class="header-menu--icon iconfont icon-youqinglianjie"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/about">
+            <span class="header-menu--span">关于自己</span>
+            <i class="header-menu--icon iconfont icon-guanyuwomen"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/tools">
+            <span class="header-menu--span">我的工具</span>
+            <i class="header-menu--icon iconfont icon-gongju"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="main-left--block">
+    <div class="main-left--site">
+      <h5 class="main-left--title">
+        <span>站点信息</span>
+        <i class="iconfont icon-zhandian"></i>
+      </h5>
+      <p class="main-left--subtitle">
+        <span>文章数目：</span>
+        <span>13 篇</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>最近动态：</span>
+        <span>今天</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>上线时间：</span>
+        <span>29天</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>当前版本：</span>
+        <span>v1.0.2</span>
+      </p>
+    </div>
+  </div>
+</div></div>
+      <div id="main-container" class="main-container">
+
+
+  <link rel="stylesheet" href="/css/partial/article.css" />
+
+<div class="article-container">
+  <div class="article">
+    <h1 class="article-title">安全开发实战(5)---fofa进行漏洞poc的信息收集</h1>
+    <div class="article-info">
+      <div class="article-info--item">
+        <div class="article-info--info">
+          
+          <div class="article-info--categories">
+            <span>分类：</span>
+            <a class="category-link" href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/">安全开发</a>
+          </div>
+          
+          
+          <div class="article-info--tags">
+            <span>标签：</span>
+            <a class="tag-link" href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" rel="tag">渗透测试</a>
+          </div>
+          
+          <p class="article-info--date">日期：2024-04-30 15:14:30</p>
+        </div>
+        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
+      </div>
+    </div>
+    <article class="article-content markdown-body">
+      <p>[TOC]</p>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><blockquote>
+<p>​    主要还是围绕渗透测试的流程进行开发,一般在信息收集后,在渗透测试后,在发现通用型漏洞时,我们为了节省时间,可以通过写批量脚本来信息收集,然后使用poc来进行批量验证.</p>
+</blockquote>
+<blockquote>
+<p>​     作为一个fofa工程师,那么我们当然是使用fofa进行信息搜集喽,刚好也借着这个机会熟悉一下fofa的API文档,为后面写利用工具做好铺垫,当然目前还是用不到API的,问就是用不起,<strong>所以只能写脚本突破注册会员限制进行信息爬取</strong>.</p>
+</blockquote>
+<blockquote>
+<p>​    这里我们需要选定一个目标,这里就用我没有复现过的漏洞作为案例来写CVE-2019-2725 weblogic 未授权远程代码执行漏洞,选择目标后,我们如何对目标进行信息收集呢</p>
+</blockquote>
+<h1 id="编写详情"><a href="#编写详情" class="headerlink" title="编写详情"></a>编写详情</h1><blockquote>
+<p>​     如果只想使用脚本的师傅,可以直接点击目录1.4跳转到突破注册会员的脚本.</p>
+</blockquote>
+<h2 id="1-1-了解结构"><a href="#1-1-了解结构" class="headerlink" title="1.1 了解结构"></a>1.1 了解结构</h2><blockquote>
+<p>​    我们使用fofa进行搜索资产时,在返回结果页面,我们进行观察,首先是发现url处有信息返回,确定请求方式为get请求,其次,熟悉不熟悉编码方式的都没关系,都提示给你了,是base64,其中%3D其实是&#x3D;号</p>
+<p>​    那么就确定了,我们需要构造一下这个,当然不构造也可以,等后面直接把下图的url直接在请求中,我的目的是为了后续的通用,所以这么写.</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> base64</span><br><span class="line">fofa_url = <span class="string">&#x27;https://fofa.info/result?qbase64=&#x27;</span>  <span class="comment"># 基础</span></span><br><span class="line">search_worlds = <span class="string">&#x27;&quot;weblogic&quot; &amp;&amp; country=&quot;CN&quot; &amp;&amp; port=&quot;7001&quot;&#x27;</span>  <span class="comment"># fofa语法</span></span><br><span class="line">search_worlds_base64 = base64.b64encode(search_worlds.encode(<span class="string">&#x27;utf-8&#x27;</span>)).decode(<span class="string">&#x27;utf-8&#x27;</span>) <span class="comment"># 将字节进行以utf-8编码,然后进行解码,最后转为base64</span></span><br><span class="line">url = <span class="built_in">str</span>(fofa_url + search_worlds_base64)</span><br><span class="line"><span class="comment"># print(url)</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>![img](%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-5-fofa%E8%BF%9B%E8%A1%8C%E6%BC%8F%E6%B4%9Epoc%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86&#x2F;2a293a4f45114fd3ad8357249fc7c6d4.png</p>
+<p>当然,因为%3D是&#x3D;号,需要改一下</p>
+<p><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-5-fofa%E8%BF%9B%E8%A1%8C%E6%BC%8F%E6%B4%9Epoc%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/50741597b4034190a371efbff784a3fd.png" alt="img"><br><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-5-fofa%E8%BF%9B%E8%A1%8C%E6%BC%8F%E6%B4%9Epoc%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/b5a73fbe8fb543e79c02865cfa7120f8.png" alt="img"></p>
+<h2 id="1-2-发起请求"><a href="#1-2-发起请求" class="headerlink" title="1.2 发起请求"></a>1.2 发起请求</h2><blockquote>
+<p>​    这里有个问题就是fofa在请求时,需要登录,所以需要在登录后添加cookie,来确保是登录状态,如图所示在登录后,在页面使用F12的网络中,进行刷新页面,就会出现cookie,其中User-Agent是为了避免网站的反爬机制,告诉反爬我们不是机器是人在访问,cookie代表我们是登录状态.</p>
+</blockquote>
+<p><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-5-fofa%E8%BF%9B%E8%A1%8C%E6%BC%8F%E6%B4%9Epoc%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/0992fe9b016a42bebf6fa7d805edba89.png" alt="img"></p>
+<h3 id="1-2-1-请求头"><a href="#1-2-1-请求头" class="headerlink" title="1.2.1 请求头"></a>1.2.1 请求头</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用verify=false会出现waring警告,去掉警告用下面这条语句</span></span><br><span class="line">requests.packages.urllib3.disable_warnings()</span><br><span class="line">headers = &#123;</span><br><span class="line">    <span class="string">&#x27;User-Agent&#x27;</span>: <span class="string">&#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;Cookie&#x27;</span>: <span class="string">&#x27;&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="1-2-2-进行请求"><a href="#1-2-2-进行请求" class="headerlink" title="1.2.2 进行请求"></a>1.2.2 进行请求</h3><blockquote>
+<p>​    这里在请求返回的数据中,出现了问题,以utf-8的方式进解码,返回的数据,但是会出现显示gbk错误,于是使用下面的方式进行解决,因为我们获取的数据和中文无关,所以中文乱不乱码无所谓.</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用get 请求,指定url ,请求头</span></span><br><span class="line">result = requests.get(url, headers=headers, verify=<span class="literal">False</span>) </span><br><span class="line"><span class="comment"># data = result.content.decode(&#x27;utf-8&#x27;)</span></span><br><span class="line"><span class="comment"># 虽然还是会导致出现的返回的文本中出现乱码,但是没有影响</span></span><br><span class="line">data = result.content.decode(<span class="string">&#x27;gbk&#x27;</span>, errors=<span class="string">&#x27;ignore&#x27;</span>)</span><br><span class="line"><span class="comment"># print(data)</span></span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>​    如图所示,请求返回的数据非常多也,非常杂乱,但是都在一个个标签中,我们要想解决,就需要我们从标签中将数据提取出来<br> <img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-5-fofa%E8%BF%9B%E8%A1%8C%E6%BC%8F%E6%B4%9Epoc%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/ba7ea8b5d49f4e2d89037d1acf0d1781.png" alt="img"></p>
+</blockquote>
+<h3 id="1-2-3-提取数据-并进行存储"><a href="#1-2-3-提取数据-并进行存储" class="headerlink" title="1.2.3 提取数据,并进行存储"></a>1.2.3 提取数据,并进行存储</h3><blockquote>
+<p>​    这里就需要利用xpath这种方式进行提取和利用了,当然也可以使用其他的方式,个人因为使用java和python常用xml所以选用了这个.</p>
+<p>​    XPath（XML Path Language）是一种在XML文档中定位信息的语言，它提供了能在XML文档中查找信息的一种灵活方式。当然看不明白,没关系,用实例来帮助理解就可以了</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>语法</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#x2F;</td>
+<td>从根节点选取</td>
+</tr>
+<tr>
+<td>&#x2F;&#x2F;</td>
+<td>从匹配选择的当前节点选择文档中的节点，而不考虑它们的位置</td>
+</tr>
+<tr>
+<td>.</td>
+<td>选取当前节点</td>
+</tr>
+<tr>
+<td>..</td>
+<td>选取当前节点的父节点</td>
+</tr>
+<tr>
+<td>@</td>
+<td>选取属性</td>
+</tr>
+<tr>
+<td>&#x2F;bookstore&#x2F;book[1]</td>
+<td>选取属于bookstore子元素的第一个book元素</td>
+</tr>
+<tr>
+<td>&#x2F;bookstore&#x2F;book[last()]</td>
+<td>选取属于bookstore子元素的最后一个book元素</td>
+</tr>
+<tr>
+<td>&#x2F;bookstore&#x2F;book[position()&lt;3]</td>
+<td>选取属于bookstore子元素的前两个book元素</td>
+</tr>
+<tr>
+<td>&#x2F;&#x2F;title[@lang]</td>
+<td>选取所有拥有名为lang的属性的title元素</td>
+</tr>
+<tr>
+<td>&#x2F;&#x2F;title[@lang&#x3D;’eng’]</td>
+<td>选取所有title元素，且这些元素拥有值为’eng’的lang属性</td>
+</tr>
+<tr>
+<td>*</td>
+<td>匹配任何元素节点</td>
+</tr>
+<tr>
+<td>@*</td>
+<td>匹配任何属性节点</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">html = etree.HTML(data)</span><br><span class="line"><span class="comment"># IPaddrs = html.xpath(&#x27;//div[@class=&quot;hsxa-meta-data-item&quot;]/div[@class=&quot;hsxa-clearfix hsxa-meta-data-list-revision-lv1&quot;]/div[@class=&quot;hsxa-fl hsxa-meta-data-list-lv1-lf&quot;]/span[@class=&quot;hsxa-host&quot;]/text()&#x27;)</span></span><br><span class="line">IPaddrs = html.xpath(<span class="string">&#x27;//span[@class=&quot;hsxa-host&quot;]/text()&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(IPaddrs)</span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;CVE-2019-2725_domain.txt&#x27;</span>, <span class="string">&#x27;a+&#x27;</span>, encoding=<span class="string">&#x27;utf-8&#x27;</span>) <span class="keyword">as</span> w:</span><br><span class="line">    <span class="keyword">for</span> ipaddr <span class="keyword">in</span> IPaddrs:</span><br><span class="line">        <span class="built_in">print</span>(ipaddr)</span><br><span class="line">        ipaddr = ipaddr.rstrip()  <span class="comment"># 去掉换行符</span></span><br><span class="line">        w.write(ipaddr+<span class="string">&#x27;\n&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>   如下图所示,我们需要采集的是,需要验证的url,那么看以看出,我们需要的url在div这个表签中,其中的class是data-item中,熟悉fofa的都知道,返回的数据一般就是10条,那么就是10个这个data-item,我们要做匹配的话,只看其中一个结构就可以了,那么就是div–&gt;div–&gt;div–&gt;span 这个结构,dic嵌套div下面的继续嵌套div</p>
+</blockquote>
+<p><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-5-fofa%E8%BF%9B%E8%A1%8C%E6%BC%8F%E6%B4%9Epoc%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/66d0340a32464812906af47714c6adbe.png" alt="img"></p>
+<p>上面的表格也就重点看这几句</p>
+<p>​    <strong>&#x2F;&#x2F;全局匹配,&#x2F;根节点匹配 直接把title替换div,lang替换为class,本质上是一致的</strong></p>
+<table>
+<thead>
+<tr>
+<th>&#x2F;</th>
+<th>从根节点选取(当前匹配的位置下选择)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#x2F;&#x2F;</td>
+<td>从匹配选择的当前节点选择文档中的节点，<strong>而不考虑它们的位置</strong>(全局)</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>&#x2F;&#x2F;title[@lang]</th>
+<th>选取所有拥有名为lang的属性的title元素</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#x2F;&#x2F;title[@lang&#x3D;’eng’]</td>
+<td>选取所有title元素，且这些元素拥有值为’eng’的lang属性</td>
+</tr>
+</tbody></table>
+<h4 id="方式一"><a href="#方式一" class="headerlink" title="方式一:"></a>方式一:</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">//div[@<span class="keyword">class</span>=<span class="string">&quot;hsxa-meta-data-item&quot;</span>] 匹配第一个div</span><br><span class="line"></span><br><span class="line">/div[@<span class="keyword">class</span>=<span class="string">&quot;hsxa-clearfix hsxa-meta-data-list-revision-lv1&quot;</span>] 匹配当前根节点下的div</span><br><span class="line"></span><br><span class="line">/div[@<span class="keyword">class</span>=<span class="string">&quot;hsxa-fl hsxa-meta-data-list-lv1-lf&quot;</span>]</span><br><span class="line"></span><br><span class="line">/span[@<span class="keyword">class</span>=<span class="string">&quot;hsxa-host&quot;</span>]/text() 这个就是最后匹配的了,此时匹配的是标签中的文本,所以是/text()代表根节点下的文本</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="方式二"><a href="#方式二" class="headerlink" title="方式二:"></a>方式二:</h4><p>使用熟悉后,可以直接使用这个进行匹配</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">//span[@<span class="keyword">class</span>=<span class="string">&quot;hsxa-host&quot;</span>]/text()</span><br></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>全局匹配span这个标签中包含class为hsxa-host的根节点下的文本</p>
+<p><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-5-fofa%E8%BF%9B%E8%A1%8C%E6%BC%8F%E6%B4%9Epoc%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/9c4452847d9c4650936404da70208a3b.png" alt="img"></p>
+<h2 id="1-3-完整代码-爬取一页"><a href="#1-3-完整代码-爬取一页" class="headerlink" title="1.3 完整代码(爬取一页)"></a>1.3 完整代码(爬取一页)</h2><p>当然这个只能爬取第一页面,并且因为线程的原因爬取速度比较慢</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">from</span> lxml <span class="keyword">import</span> etree</span><br><span class="line"></span><br><span class="line">fofa_url = <span class="string">&#x27;https://fofa.info/result?qbase64=&#x27;</span></span><br><span class="line">search_worlds = <span class="string">&#x27;&quot;weblogic&quot; &amp;&amp; country=&quot;CN&quot; &amp;&amp; port=&quot;7001&quot;&#x27;</span></span><br><span class="line">search_worlds_base64 = base64.b64encode(search_worlds.encode(<span class="string">&#x27;utf-8&#x27;</span>)).decode(<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line">url = <span class="built_in">str</span>(fofa_url + search_worlds_base64)</span><br><span class="line"><span class="comment"># print(url)</span></span><br><span class="line"><span class="comment"># 使用verify=false会出现waring警告,去掉警告用下面这条语句</span></span><br><span class="line">requests.packages.urllib3.disable_warnings()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">headers = &#123;</span><br><span class="line">    <span class="string">&#x27;User-Agent&#x27;</span>: <span class="string">&#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;Cookie&#x27;</span>: <span class="string">&#x27;&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">result = requests.get(url, headers=headers, verify=<span class="literal">False</span>)</span><br><span class="line"><span class="comment"># data = result.content.decode(&#x27;utf-8&#x27;)</span></span><br><span class="line"><span class="comment"># 虽然还是会导致出现的返回的文本中出现乱码,但是可以进行处理</span></span><br><span class="line">data = result.content.decode(<span class="string">&#x27;gbk&#x27;</span>, errors=<span class="string">&#x27;ignore&#x27;</span>)</span><br><span class="line"><span class="comment"># print(data)</span></span><br><span class="line">html = etree.HTML(data)</span><br><span class="line">IPaddrs = html.xpath(<span class="string">&#x27;//div[@class=&quot;hsxa-meta-data-item&quot;]/div[@class=&quot;hsxa-clearfix hsxa-meta-data-list-revision-lv1&quot;]/div[@class=&quot;hsxa-fl hsxa-meta-data-list-lv1-lf&quot;]/span[@class=&quot;hsxa-host&quot;]/text()&#x27;</span>)</span><br><span class="line">IPaddrs = html.xpath(<span class="string">&#x27;//span[@class=&quot;hsxa-host&quot;]/text()&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(IPaddrs)</span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;CVE-2019-2725_domain.txt&#x27;</span>, <span class="string">&#x27;a+&#x27;</span>, encoding=<span class="string">&#x27;utf-8&#x27;</span>) <span class="keyword">as</span> w:</span><br><span class="line">    <span class="keyword">for</span> ipaddr <span class="keyword">in</span> IPaddrs:</span><br><span class="line">        <span class="built_in">print</span>(ipaddr)</span><br><span class="line">        ipaddr = ipaddr.rstrip()  <span class="comment"># 去掉换行符</span></span><br><span class="line">        w.write(ipaddr+<span class="string">&#x27;\n&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+
+<p><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-5-fofa%E8%BF%9B%E8%A1%8C%E6%BC%8F%E6%B4%9Epoc%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/6822189cf6c24d0ba07ffae7f305071e.png" alt="img"></p>
+<p> <img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-5-fofa%E8%BF%9B%E8%A1%8C%E6%BC%8F%E6%B4%9Epoc%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/f35cbbe143ff46daa192c18253d0c0e5.png" alt="img"></p>
+<h2 id="1-4-突破注册会员限制批量采集-爬取指定数量页面"><a href="#1-4-突破注册会员限制批量采集-爬取指定数量页面" class="headerlink" title="1.4 突破注册会员限制批量采集(爬取指定数量页面)"></a>1.4 突破注册会员限制批量采集(爬取指定数量页面)</h2><blockquote>
+<p>​    建议需要的师傅直接用就可以了,其实代码本身不难,主要是方法,需要学的师傅可以分析一下进行学习.</p>
+</blockquote>
+<blockquote>
+<p>​         <strong>如果需要爬取指定的信息需要师傅进行更改xpath的匹配内容</strong> </p>
+</blockquote>
+<blockquote>
+<p>​    突破fofa注册用户限制只能显示五页的数据的情况,并使用了线程,添加了爬取速度</p>
+<p>​    为什么搞这个呢,高级会员学生党确实用不起,能白嫖就尽量白嫖吧,有钱的话还是尽量支持一下,当然冲着会员爬的话,那就是心安理德了.</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> base64</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> lxml <span class="keyword">import</span> etree</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fofa_search</span>(<span class="params">search_data, page_data</span>):</span><br><span class="line">    <span class="comment"># 必须要有cookie</span></span><br><span class="line">    headers = &#123;</span><br><span class="line">        <span class="string">&#x27;User-Agent&#x27;</span>: <span class="string">&#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Cookie&#x27;</span>: <span class="string">&#x27;&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    lock = threading.Lock()  <span class="comment"># 创建线程锁</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">process_page</span>(<span class="params">page</span>):</span><br><span class="line">        url = <span class="string">&#x27;https://fofa.info/result?qbase64=&#x27;</span></span><br><span class="line">        search_worlds_base64 = <span class="built_in">str</span>(base64.b64encode(search_data.encode(<span class="string">&quot;utf-8&quot;</span>)), <span class="string">&quot;utf-8&quot;</span>)</span><br><span class="line">        urls = url + search_worlds_base64 + <span class="string">&#x27;&amp;page=&#x27;</span> + <span class="built_in">str</span>(page) + <span class="string">&#x27;&amp;page_size=10&#x27;</span></span><br><span class="line">        <span class="comment"># print(urls)  #  打印请求的URL</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            retry_count = <span class="number">3</span></span><br><span class="line">            <span class="keyword">while</span> retry_count &gt; <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">try</span>:</span><br><span class="line">                    result = requests.get(url=urls, headers=headers, timeout=<span class="number">10</span>).text</span><br><span class="line">                    <span class="keyword">break</span>  <span class="comment"># 请求成功，跳出重试循环</span></span><br><span class="line">                <span class="keyword">except</span> requests.RequestException <span class="keyword">as</span> e:</span><br><span class="line">                    <span class="built_in">print</span>(<span class="string">&quot;请求发生异常:&quot;</span>, e)</span><br><span class="line">                    retry_count -= <span class="number">1</span></span><br><span class="line">                    <span class="keyword">if</span> retry_count == <span class="number">0</span>:</span><br><span class="line">                        <span class="built_in">print</span>(<span class="string">&quot;请求重试次数已达上限，放弃请求&quot;</span>)</span><br><span class="line">                        <span class="keyword">return</span>  <span class="comment"># 放弃当前页面的处理</span></span><br><span class="line"></span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;正在提取第&quot;</span> + <span class="built_in">str</span>(page) + <span class="string">&quot;页&quot;</span>)</span><br><span class="line">            <span class="comment"># print(result)</span></span><br><span class="line">            soup = etree.HTML(result, etree.HTMLParser())  <span class="comment"># 初始化生成一个XPath解析对象</span></span><br><span class="line">            ipaddr = soup.xpath(<span class="string">&#x27;//span[@class=&quot;hsxa-host&quot;]/text()&#x27;</span>)</span><br><span class="line">            <span class="built_in">print</span>(ipaddr)</span><br><span class="line">            ipaddr = <span class="string">&#x27;\n&#x27;</span>.join(ipaddr)</span><br><span class="line">            <span class="built_in">print</span>(ipaddr)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">with</span> lock:  <span class="comment"># 使用线程锁保证写入文件的互斥性</span></span><br><span class="line">                <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">r&#x27;CVE-2019-2725_domain.txt&#x27;</span>, <span class="string">&#x27;a+&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">                    <span class="built_in">print</span>(<span class="string">&quot;写入文件中&quot;</span>)</span><br><span class="line">                    <span class="comment"># f.write(&#x27;页面：&#x27;+str(page)+&#x27;\n&#x27;+ipdata + &#x27;\n&#x27;)</span></span><br><span class="line">                    f.write(ipaddr + <span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">                    f.close()</span><br><span class="line"></span><br><span class="line">            time.sleep(<span class="number">0.5</span>)  <span class="comment"># 防止速度过快导致部分数据被略过</span></span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;异常:&quot;</span>, e)</span><br><span class="line"></span><br><span class="line">    max_threads = <span class="number">2</span>  <span class="comment"># 设置最大线程数量为2,超过2会导致页面爬取内容为空</span></span><br><span class="line">    threads = []</span><br><span class="line">    <span class="keyword">for</span> page <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, page_data + <span class="number">1</span>):</span><br><span class="line">        <span class="keyword">while</span> <span class="built_in">len</span>(threads) &gt;= max_threads:</span><br><span class="line">            <span class="comment"># 等待当前线程数量降到允许的最大值以下</span></span><br><span class="line">            time.sleep(<span class="number">1</span>)</span><br><span class="line">            threads = [t <span class="keyword">for</span> t <span class="keyword">in</span> threads <span class="keyword">if</span> t.is_alive()]</span><br><span class="line"></span><br><span class="line">        t = threading.Thread(target=process_page, args=(page,))</span><br><span class="line">        threads.append(t)</span><br><span class="line">        t.start()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> threads:</span><br><span class="line">        t.join()</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;*********数据提取完成*********&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    <span class="comment"># fofa语句, 采集页面数</span></span><br><span class="line">    <span class="comment"># fofa_search(&#x27;&quot;weblogic&quot;&#x27;, 10)  # 示例</span></span><br><span class="line">    fofa_search(<span class="string">&#x27;&#x27;</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+
+
+<p><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-5-fofa%E8%BF%9B%E8%A1%8C%E6%BC%8F%E6%B4%9Epoc%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/6a258f7d76204be9a1606a37d2b0ce34.png" alt="img"></p>
+<p><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-5-fofa%E8%BF%9B%E8%A1%8C%E6%BC%8F%E6%B4%9Epoc%E7%9A%84%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/1e388c6d610e476ebb9a6acc99b50518.png" alt="img"> </p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><blockquote>
+<p>​    本篇主要是对在进行渗透测试中发现通用型漏洞时需要进行信息收集,因此写下这篇fofa的收集,刚好也复习一下使用爬虫时的xpath匹配,也为自己在后续写工具做好铺垫.</p>
+</blockquote>
+
+    </article>
+    
+    <div class="read-nums">
+      <!-- id 将作为查询条件 -->
+      <span id="2024/04/30/安全开发实战-5-fofa进行漏洞poc的信息收集/" class="leancloud_visitors" data-flag-title="Your Article Title">
+        <em class="post-meta-item-text">浏览量</em>
+        <i class="leancloud-visitors-count"></i>
+      </span>
+    </div>
+    <div class="comments-intro">
+      <h2>评论区</h2>
+      <p>欢迎你留下宝贵的意见，昵称输入QQ号会显示QQ头像哦~</p>
+    </div>
+    <div id="vcomments" class="vcomments"></div>
+    
+  </div>
+  <div class="article-catelogue">
+    <div class="article-catelogue--wrapper">
+      <div class="catelogue catelogue-1">
+        <h3>目录</h3>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BC%96%E5%86%99%E8%AF%A6%E6%83%85"><span class="toc-number">2.</span> <span class="toc-text">编写详情</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E4%BA%86%E8%A7%A3%E7%BB%93%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 了解结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E5%8F%91%E8%B5%B7%E8%AF%B7%E6%B1%82"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 发起请求</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-1-%E8%AF%B7%E6%B1%82%E5%A4%B4"><span class="toc-number">2.2.1.</span> <span class="toc-text">1.2.1 请求头</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-2-%E8%BF%9B%E8%A1%8C%E8%AF%B7%E6%B1%82"><span class="toc-number">2.2.2.</span> <span class="toc-text">1.2.2 进行请求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-3-%E6%8F%90%E5%8F%96%E6%95%B0%E6%8D%AE-%E5%B9%B6%E8%BF%9B%E8%A1%8C%E5%AD%98%E5%82%A8"><span class="toc-number">2.2.3.</span> <span class="toc-text">1.2.3 提取数据,并进行存储</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%B8%80"><span class="toc-number">2.2.3.1.</span> <span class="toc-text">方式一:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%BA%8C"><span class="toc-number">2.2.3.2.</span> <span class="toc-text">方式二:</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81-%E7%88%AC%E5%8F%96%E4%B8%80%E9%A1%B5"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 完整代码(爬取一页)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-4-%E7%AA%81%E7%A0%B4%E6%B3%A8%E5%86%8C%E4%BC%9A%E5%91%98%E9%99%90%E5%88%B6%E6%89%B9%E9%87%8F%E9%87%87%E9%9B%86-%E7%88%AC%E5%8F%96%E6%8C%87%E5%AE%9A%E6%95%B0%E9%87%8F%E9%A1%B5%E9%9D%A2"><span class="toc-number">2.4.</span> <span class="toc-text">1.4 突破注册会员限制批量采集(爬取指定数量页面)</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
+      </div>
+      
+        <div class="catelogue catelogue-2">
+           
+          
+            <p>
+              <span>下一篇</span>
+              <a href="/2024/04/30/安全开发实战-4-whois与子域名爆破/">安全开发实战(4)---whois与子域名爆破</a>
+            </p>
+          
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // var定义，避免pjax重新进来造成的重复声明错误
+  var config = JSON.parse('{"enable":true,"appId":"Pf8zCXGEH1qsprnWfikVVujL-gzGzoHsz","appKey":"qOqoiUHhH1TGtLRUYURkLRQX","placeholder":"请留下你宝贵的意见吧~","meta":["nick"],"recordIP":true,"visitor":true,"enableQQ":true}')
+  new Valine({
+    el: '#vcomments',
+    appId: config.appId,
+    appKey: config.appKey,
+    placeholder: config.placeholder,
+    meta: config.meta,
+    recordIP: config.recordIP,
+    visitor: config.visitor,
+    enableQQ: config.enableQQ,
+    path: '2024/04/30/安全开发实战-5-fofa进行漏洞poc的信息收集/'
+  })
+</script>
+
+
+<script>
+  $(document).on('pjax:complete', function() {
+    const tocs = document.querySelector('.toc')
+    const links = tocs ? tocs.querySelectorAll('a') : []
+    links.forEach(link => {
+      link.addEventListener('click', e => {
+        const href = decodeURIComponent(e.href)
+        href.search(/#(.*)/)
+        const id = RegExp.$1
+        const target = document.querySelector('#' + id)
+        const top = target.offsetTop
+        document.documentElement.scrollTo({
+          top: top - 100,
+          behavior: 'smooth'
+        })
+        e.preventDefault()
+      })
+    })
+  })
+</script> 
+
+</div>
+      <div class="main-right-wrapper"><div class="main-right">
+  <div class="main-right--board">
+    <div class="main-right--title">
+      <h5>公告栏</h5>
+      <i class="iconfont icon-gonggao"></i>
+    </div>
+    <div class="main-right--content">
+      Hello~大噶好。唔系小鱼，欢迎你们来到我的博客小站，希望能在这里收获到有用的东西哦！ 
+    </div>
+  </div>
+
+  <div id="aplayer" class="main-right--music"></div>
+
+  <div class="operate-items">
+    <div class="operate-item backtop">
+      <i class="iconfont icon-huidaodingbu"></i>
+      <span>回到顶部</span>
+    </div>
+    
+    <div class="operate-item turn-comment hidden">
+      <i class="iconfont icon-pinglun"></i>
+      <span>查看评论</span>
+    </div>
+    
+  </div>
+
+  <div class="main-right--site">
+    <div class="main-right--power">
+      <p>Power By <a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/">Hexo</a>.</p>
+      <p>Theme：<a target="_blank" rel="noopener" href="https://github.com/Aizener/hexo-theme-cola">Cola.</a></p>
+    </div>
+    <p class="main-right--refer"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/#/Integrated/index">暂无</a> </p>
+  </div>
+</div>
+
+<script>
+  function setOperateItem () {
+    const reg = /\d{4}\/\d{2}\/\d{2}\/.+/
+    const path = location.pathname
+    const operateDom = document.querySelector('.main-right .operate-items')
+    const commentDom = document.querySelector('.turn-comment')
+    const cateloguDom = document.querySelector('.article-catelogue > .article-catelogue--wrapper');
+
+    if (commentDom) {
+      if (reg.test(path) || path.match(/\/log\/.+/)) {
+        commentDom.classList.remove('hidden')
+        const newDom = operateDom.cloneNode(true);
+        const _backtopDom = newDom.querySelector('.backtop');
+        const _commentDom = newDom.querySelector('.turn-comment');
+        _backtopDom.addEventListener('click', () => backTopEvent());
+        _commentDom.addEventListener('click', () => commentDomEvent());
+        cateloguDom.appendChild(newDom);
+      } else {
+        commentDom.classList.add('hidden')
+      }
+    }
+  }
+
+  setOperateItem()
+  const musics = JSON.parse(`[{"name":"安河桥","artist":"宋冬野","url":"http://ting6.yymp3.net:82/new25/songdongye/11.mp3","cover":"https://img2.baidu.com/it/u=1260056724,1076343118&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"},{"name":"卡布达","artist":"暂无","url":"music/kabuda.mp3","cover":"https://img2.baidu.com/it/u=705831265,2862720033&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"}]`)
+  const ap = new APlayer({
+    container: document.querySelector('#aplayer'),
+    audio: musics,
+  })
+
+  $(document).on('pjax:complete', function() {
+    setOperateItem()
+  })
+
+  document.querySelector('.backtop').addEventListener('click', () => {
+    backTopEvent();
+  })
+  const dom = document.querySelector('.turn-comment')
+  dom && dom.addEventListener('click', () => {
+    commentDomEvent();
+  })
+
+  function backTopEvent() {
+    document.documentElement.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+
+  function commentDomEvent() {
+    const commentDom = document.querySelector('.comments-intro')
+    if (!commentDom) return
+    const top = commentDom.offsetTop, height = commentDom.offsetHeight
+    document.documentElement.scrollTo({
+      top: top - 2 * height,
+      behavior: 'smooth'
+    })
+  }
+</script></div>
+    </section>
+  </div>
+  <div id="progress" class="progress"></div>
+  <div id="gray" class="gray"></div>
+
+  <script>
+    function initScroll () {
+      document.addEventListener('scroll', () => {
+        const doc = document.documentElement
+        const scrollTop = doc.scrollTop
+        const pageHeight = doc.offsetHeight
+        const clientHeight = doc.clientHeight
+        const ratio = scrollTop / (pageHeight - clientHeight)
+        const progress = document.querySelector('#progress')
+        const avatarImg = document.querySelector('.main-left--avatar')
+        progress.style.width = (100 * ratio) + '%'
+        avatarImg.style.transform = `rotate(${360 * ratio}deg)`
+      })
+    }
+
+    const rootPath = "/"
+
+    const checkAndSetArticlePageLayout = () => {
+      const path = location.pathname.replace(rootPath, '');
+      if (
+        /^\/?\d{4}\/\d{2}\/\d{2}\/.*/.test(path) ||
+        /^log\/.+/.test(path)
+      ) {
+        $('.main-container, .main-right, .main-right-wrapper').addClass('is-article')
+      } else {
+        $('.main-container, .main-right, .main-right-wrapper').removeClass('is-article')
+      }
+    }
+
+    const gray = "none"
+    const setGrayStyle = () => {
+      if (gray === 'none') {
+        return
+      } else if (gray === 'index') {
+        location.pathname === '/' ? $('#gray').show() : $('#gray').hide()
+      } else if (gray === 'all') {
+        $('#gray').show()
+      }
+    }
+    setGrayStyle()
+
+
+    window.onload = function () {
+      checkAndSetArticlePageLayout()
+      setTimeout(() => {
+        $('#load').slideUp()
+        $('#container').slideToggle()
+        setTimeout(() => {
+          initScroll();
+        }, 500)
+      }, 500)
+    }
+    
+    let status = 0
+    // 对所有链接跳转事件绑定pjax容器container
+    $(document).pjax('a[target!=_blank]', '#main-container', {
+      container: '#main-container',
+      fragment: '#main-container',
+      timeout: 8000
+    })
+
+    $(document).on('pjax:start', function() {
+    })
+    $(document).on('pjax:complete', function() {
+      status = 0
+      $('.main-container').addClass('to-up').on('animationend', function() {
+        $(this).removeClass('to-up')
+      })
+      setGrayStyle()
+      checkAndSetArticlePageLayout()
+    })
+    $(document).on('pjax:popstate', function() {
+      status = -1
+      checkAndSetArticlePageLayout()
+    });
+  </script>
+</body>
+</html>
