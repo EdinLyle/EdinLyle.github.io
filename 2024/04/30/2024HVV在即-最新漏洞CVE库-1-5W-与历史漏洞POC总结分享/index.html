@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>我的技术与生活——2024HVV在即| 最新漏洞CVE库(1.5W)与历史漏洞POC总结分享! | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/css/public.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/iconfont.css" />
+  <link rel="stylesheet" href="/css/APlayer.min.css" />
+  <script src="/js/APlayer.min.js"></script>
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/jquery.pjax.min.js"></script>
+
+  <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+  <script>
+    document.title = `我的技术与生活——2024HVV在即| 最新漏洞CVE库(1.5W)与历史漏洞POC总结分享!`
+  </script>
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<style>
+  .load {
+    width: 100%;
+    height: 100vh;
+    background-color: rgb(37, 35, 40);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 9999;
+  }
+  .load-circle {
+    width: 80px;
+    height: 80px;
+    border: 8px solid orange;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: rotate 1s linear infinite;
+    filter: drop-shadow(0 0 3px orange);
+  }
+  .load-circle-inner {
+    width: 40px;
+    height: 40px;
+    border: 8px solid orange;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: rotate-reverse .5s linear infinite;
+  }
+  .load-text {
+    margin-top: 20px;
+    font-size: 24px;
+    color: orange;
+    display: flex;
+  }
+  .load-text span {
+    margin: 0 5px;
+    text-shadow: 5px 5px 5px orange;
+    animation: move 1s linear infinite;
+  }
+  .load-text span:nth-child(1) {
+    animation-delay: -0.6s;
+  }
+  .load-text span:nth-child(2) {
+    animation-delay: -0.5s;
+  }
+  .load-text span:nth-child(3) {
+    animation-delay: -0.4s;
+  }
+  .load-text span:nth-child(4) {
+    animation-delay: -0.3s;
+  }
+  .load-text span:nth-child(5) {
+    animation-delay: -0.2s;
+  }
+  .load-text span:nth-child(6) {
+    animation-delay: -0.1s;
+  }
+  @keyframes rotate {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes rotate-reverse {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(-360deg); }
+  }
+  @keyframes move {
+    0% { transform: translateY(0%) rotate(0) scale(1); }
+    20% { transform: translateY(20%) rotate(10deg) scale(1.2); }
+    80% { transform: translateY(-10%) rotate(-20deg) scale(.8);}
+    100% { transform: translateY(0) rotate(0) scale(1); }
+  }
+
+  .progress {
+    position: fixed;
+    left: 0; top: 0;
+    width: 0;
+    height: 3px;
+    background-color: green;
+    transition: all cubic-bezier(0.215, 0.610, 0.355, 1) .1s;
+    z-index: 9999;
+  }
+
+  .to-up {
+    animation: toUp .5s 1;
+  }
+  .gray {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 9999;
+    display: none;
+    pointer-events: none;
+    background-color: #000;
+    mix-blend-mode: color;
+  }
+  @keyframes toUp {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0) ; opacity: 1; }
+  }
+</style>
+<body>
+  <div id="load" class="load">
+    <div class="load-circle">
+      <div class="load-circle-inner"></div>
+    </div>
+    <p class="load-text">
+      <span>L</span>
+      <span>O</span>
+      <span>A</span>
+      <span>D</span>
+      <span>I</span>
+      <span>N</span>
+      <span>G</span>
+    </p>
+  </div>
+  <div id="container" class="container w-100 vh-100" style="display: none;">
+    <header class="header">
+  <div class="header-wrapper">
+    <div class="header-left">
+      <div class="header-search">
+        <input id="search-input" type="text" class="header-search--input" placeholder="请输入要检索的文章标题" />
+        <span id="search-btn" class="header-search--icon"><i class="iconfont icon-sousuo"></i></span>
+      </div>
+      <div id="search-layer" class="header-search--layer hidden">
+        <p class="title">
+          <span>以下是搜索内容：</span>
+          <span id="close-layer-btn">关闭</span>
+        </p>
+        <ul>
+        </ul>
+      </div>
+    </div>
+    <div class="header-right">
+      <ul class="header-menu">
+        <li>
+          <a href="http://example.com/">
+            <i class="header-menu--icon iconfont icon-shouye"></i>
+            <span class="header-menu--span">首页</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/log">
+            <i class="header-menu--icon iconfont icon-rizhi"></i>
+            <span class="header-menu--span">日志</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/link">
+            <i class="header-menu--icon iconfont icon-youqinglianjie"></i>
+            <span class="header-menu--span">友情链接</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/about">
+            <i class="header-menu--icon iconfont icon-guanyuwomen"></i>
+            <span class="header-menu--span">关于我</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<script>
+  const ipt = document.querySelector('#search-input')
+  const btn = document.querySelector('#search-btn')
+  const layer = document.querySelector('#search-layer')
+  const posts = JSON.parse(`[{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"免杀开发基础(1)","path":"2024/04/12/免杀开发基础-1/"},{"title":"2024HVV在即| 最新漏洞CVE库(1.5W)与历史漏洞POC总结分享!","path":"2024/04/30/2024HVV在即-最新漏洞CVE库-1-5W-与历史漏洞POC总结分享/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"安全开发实战(2)---域名反查IP","path":"2024/04/30/安全开发实战-2-域名反查IP/"},{"title":"安全开发实战(3)---存活探测与端口扫描","path":"2024/04/30/安全开发实战-3-存活探测与端口扫描/"},{"title":"安全开发实战(4)---whois与子域名爆破","path":"2024/04/30/安全开发实战-4-whois与子域名爆破/"},{"title":"安全开发实战(6)---对fofa收集的漏洞资产使用poc进行批量验证","path":"2024/04/30/安全开发实战-6-对fofa收集的漏洞资产使用poc进行批量验证/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"安全开发实战(5)---fofa进行漏洞poc的信息收集","path":"2024/04/30/安全开发实战-5-fofa进行漏洞poc的信息收集/"},{"title":"某小学AK,SK泄露导致横向到云主机控制台","path":"2024/04/16/某小学AK-SK泄露导致横向到云主机控制台/"},{"title":"网安开发实战(1)-Cdn","path":"2024/04/16/网安开发实战-1-Cdn/"},{"title":"某音矩阵云混剪系统V2.3.0代码审计(1)","path":"2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"}]`)
+  ipt.addEventListener('keyup', e => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
+  })
+  btn.addEventListener('click', () => {
+    handleSearch()
+  })
+
+  document.querySelector('#close-layer-btn').addEventListener('click', () => {
+    layer.classList.toggle('hidden')
+  })
+
+  function handleSearch() {
+    if (ipt.value.trim() === '') {
+      return
+    }
+    let html = ''
+    const targetPosts = posts.filter(post => post.title.includes(ipt.value))
+    targetPosts.forEach(post => {
+      html += `
+        <li>
+          <div>
+            <a href="/${post.path}">${post.title.replace(new RegExp(ipt.value), `<span>${ipt.value}</span>`)}</a>
+          </div>
+          <img src="${post.cover || '/imgs/default-cover.webp' }" />
+        </li>
+      `
+    })
+    if (html.trim () === '') {
+      html += '<p class="empty">没有搜索到内容</p>'
+    }
+    layer.querySelector('ul').innerHTML = html
+    layer.classList.remove('hidden')
+  }
+</script> 
+    <section id="main" class="main">
+      <div class="main-left-wrapper">
+<div class="main-left">
+  <div class="main-left--block">
+    <div class="main-left--info">
+      <img src="/imgs/avatar.jpg"" class="main-left--avatar" />
+      <div class="main-left--intro">
+        <p class="main-left--name">小鱼</p>
+        <div class="main-left--tags">
+          <span class="main-left--tag">渗透测试</span>
+          <span class="main-left--tag">善于观察</span>
+        </div>
+      </div>
+    </div>
+  
+    <div>
+      <div class="main-left--motto">
+        <p>“花有重开日，人无再少年”</p>
+        <p>“一个简单普通的男孩”</p>
+      </div>
+      <div class="main-left--github">
+        <span class="line"></span>
+        <a target="_blank" rel="noopener" href="https://gitee.com/ccshyi"><i class="logo iconfont icon-github-fill"></i></a>
+        <span class="line"></span>
+      </div>
+      <div class="main-left--statics">
+        <a href="/categories">
+          <div>
+            <span>7</span>
+            <span>分类</span>
+          </div>
+        </a>
+        <a href="/tags">
+          <div>
+            <span>6</span>
+            <span>标签</span>
+          </div>
+        </a>
+        <a href="/archives">
+          <div>
+            <span>1 </span>
+            <span>归档</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-left--block">
+    <ul class="main-left--menu">
+      
+        <li>
+          <a href="/">
+            <span class="header-menu--span">小站首页</span>
+            <i class="header-menu--icon iconfont icon-shouye"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/log">
+            <span class="header-menu--span">个人日志</span>
+            <i class="header-menu--icon iconfont icon-rizhi"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/link">
+            <span class="header-menu--span">友情链接</span>
+            <i class="header-menu--icon iconfont icon-youqinglianjie"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/about">
+            <span class="header-menu--span">关于自己</span>
+            <i class="header-menu--icon iconfont icon-guanyuwomen"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/tools">
+            <span class="header-menu--span">我的工具</span>
+            <i class="header-menu--icon iconfont icon-gongju"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="main-left--block">
+    <div class="main-left--site">
+      <h5 class="main-left--title">
+        <span>站点信息</span>
+        <i class="iconfont icon-zhandian"></i>
+      </h5>
+      <p class="main-left--subtitle">
+        <span>文章数目：</span>
+        <span>15 篇</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>最近动态：</span>
+        <span>今天</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>上线时间：</span>
+        <span>29天</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>当前版本：</span>
+        <span>v1.0.2</span>
+      </p>
+    </div>
+  </div>
+</div></div>
+      <div id="main-container" class="main-container">
+
+
+  <link rel="stylesheet" href="/css/partial/article.css" />
+
+<div class="article-container">
+  <div class="article">
+    <h1 class="article-title">2024HVV在即| 最新漏洞CVE库(1.5W)与历史漏洞POC总结分享!</h1>
+    <div class="article-info">
+      <div class="article-info--item">
+        <div class="article-info--info">
+          
+          <div class="article-info--categories">
+            <span>分类：</span>
+            <a class="category-link" href="/categories/%E6%BC%8F%E6%B4%9E%E4%B8%8E%E7%9F%A5%E8%AF%86%E5%BA%93/">漏洞与知识库</a>
+          </div>
+          
+          
+          <div class="article-info--tags">
+            <span>标签：</span>
+            <a class="tag-link" href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" rel="tag">渗透测试</a>
+          </div>
+          
+          <p class="article-info--date">日期：2024-04-30 22:31:43</p>
+        </div>
+        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
+      </div>
+    </div>
+    <article class="article-content markdown-body">
+      <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><blockquote>
+<p>   也快到护网的时间了,每年的护网都是一场攻防实战的盛宴,那么漏洞库就是攻防红蓝双方人员的弹药库,红队人员可以通过工具进行监测是否存在历史漏洞方便快速打点,而蓝队则可以对资产进行梳理和监测历史漏洞,及时处理和修复,做好准备.</p>
+<p>​            <strong>下面分享的,都是本人经常使用的漏洞库与知识库</strong></p>
+</blockquote>
+<h2 id="免责声明"><a href="#免责声明" class="headerlink" title="免责声明"></a>免责声明</h2><blockquote>
+<p>​    本文仅用于技术讨论与学习，利用此文所提供的信息而造成的任何直接或者间接的后果及损失，均由使用者本人负责，文章作者及本博客不为此承担任何责任。</p>
+</blockquote>
+<h2 id="分享声明"><a href="#分享声明" class="headerlink" title="分享声明"></a>分享声明</h2><blockquote>
+<p><strong>以下的漏洞库均属安全团队自行收集,本人及博客仅做分享,如有侵权,联系作者本人进行删除</strong></p>
+</blockquote>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="最近漏洞库分享"><a href="#最近漏洞库分享" class="headerlink" title="最近漏洞库分享"></a>最近漏洞库分享</h1><h2 id="1-接近1-5W条CVE的poc"><a href="#1-接近1-5W条CVE的poc" class="headerlink" title="1.接近1.5W条CVE的poc"></a>1.<strong>接近1.5W条CVE的poc</strong></h2><p>​        由微信公众号<strong>Z2O安全攻防</strong>一直进行维护和维护的CVE库,<strong>接近1.5W条</strong></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302235629.png"></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302235583.png"></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/komomon/POC_Collect">komomon&#x2F;POC_Collect: (持续更新)本项目为存储团队Bot小K每日监测到的最新POC，EXP，以及自己平时总结的POC，为了方便渗透测试过程中，漏洞查询，脱网环境的渗透测试。 (github.com)https://github.com/komomon/POC_Collect</a></p>
+<h2 id="2-一个漏洞POC知识库"><a href="#2-一个漏洞POC知识库" class="headerlink" title="2.一个漏洞POC知识库"></a>2.一个漏洞POC知识库</h2><p>​             由微信公众号<strong>海底天上月</strong>及其团队维护的各种类型的漏洞库</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Threekiii/Awesome-POC">Threekiii&#x2F;Awesome-POC: 一个漏洞POC知识库 (github.com)https://github.com/Threekiii/Awesome-POC</a></p>
+<p>​    包含下面各种类型的漏洞知识库,其中所有漏洞知识库,都是由md文档类型进行编写的 </p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302235751.png"></p>
+<p>​       <img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302235320.png"></p>
+<p><strong>下面是部分漏洞POC知识库清单,详情请到github漏洞知识库进行查看</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br></pre></td><td class="code"><pre><span class="line">清单</span><br><span class="line"></span><br><span class="line">Nacos 漏洞清单</span><br><span class="line">SmartBi 漏洞 Checklist</span><br><span class="line">安全设备漏洞 Checklist</span><br><span class="line">CMS漏洞</span><br><span class="line"></span><br><span class="line">74cms v4<span class="number">.2</span><span class="number">.1</span> v4<span class="number">.2</span><span class="number">.129</span> 后台getshell漏洞</span><br><span class="line">74cms v5<span class="number">.0</span><span class="number">.1</span> 后台跨站请求伪造漏洞 CVE-<span class="number">2019</span>-<span class="number">11374</span></span><br><span class="line">Anchor CMS <span class="number">0.12</span><span class="number">.7</span> 跨站请求伪造 CVE-<span class="number">2020</span>-<span class="number">23342</span></span><br><span class="line">AspCMS commentList.asp SQL注入漏洞</span><br><span class="line">BloofoxCMS <span class="number">0.5</span><span class="number">.2</span><span class="number">.1</span> 存储型XSS</span><br><span class="line">BSPHP index.php 未授权访问 信息泄露漏洞</span><br><span class="line">CMS Made Simple （CMSMS） 前台SQL注入漏洞 CVE-<span class="number">2019</span>-<span class="number">9053</span></span><br><span class="line">CMS Made Simple （CMSMS） 前台代码执行漏洞 CVE-<span class="number">2021</span>-<span class="number">26120</span></span><br><span class="line">CmsEasy crossall_act.php SQL注入漏洞</span><br><span class="line">CmsEasy language_admin.php 后台命令执行漏洞</span><br><span class="line">CmsEasy update_admin.php 后台任意文件上传漏洞</span><br><span class="line">CxCMS Resource.ashx 任意文件读取漏洞</span><br><span class="line">DedeCMS <span class="number">5.7</span> file_manage_control.php 文件包含 RCE CVE-<span class="number">2023</span>-<span class="number">2928</span></span><br><span class="line">DedeCMS <span class="number">5.7</span>SP2 代码执行漏洞 CVE-<span class="number">2019</span>-<span class="number">8933</span></span><br><span class="line">DedeCMS <span class="number">5.8</span><span class="number">.1</span> common.func.php 远程命令执行漏洞</span><br><span class="line">Discuz <span class="number">3.4</span> 最新版后台getshell</span><br><span class="line">Discuz <span class="number">7.</span>x6.x 全局变量防御绕过导致代码执行</span><br><span class="line">迪库兹！X ≤<span class="number">3.4</span> 任意文件删除漏洞</span><br><span class="line">迪库兹！X <span class="number">3.4</span> admincp_setting.php 后台SQL注入漏洞</span><br><span class="line">迪库兹！X3<span class="number">.4</span> 后台修改UCenter配置getshell漏洞</span><br><span class="line">DocCMS关键字SQL注入漏洞</span><br><span class="line">Drupal <span class="number">7.32</span> “Drupalgeddon” SQL注入漏洞 CVE-<span class="number">2014</span>-<span class="number">3704</span></span><br><span class="line">Drupal Core <span class="number">8</span> PECL YAML 反序列化任意代码执行漏洞 CVE-<span class="number">2017</span>-<span class="number">6920</span></span><br><span class="line">Drupal Drupalgeddon <span class="number">2</span> 远程代码执行漏洞 CVE-<span class="number">2018</span>-<span class="number">7600</span></span><br><span class="line">Drupal XSS漏洞 CVE-<span class="number">2019</span>-<span class="number">6341</span></span><br><span class="line">Drupal 远程代码执行漏洞 CVE-<span class="number">2018</span>-<span class="number">7602</span></span><br><span class="line">Drupal 远程代码执行漏洞 CVE-<span class="number">2019</span>-<span class="number">6339</span></span><br><span class="line">ECShop <span class="number">2.</span>x3.x SQL注入任意代码执行漏洞</span><br><span class="line">ECShop <span class="number">4.</span>x collection_list SQL注入</span><br><span class="line">emlog widgets.php 后台SQL注入漏洞</span><br><span class="line">ezEIP <span class="number">4.1</span><span class="number">.0</span> 信息泄露漏洞</span><br><span class="line">Fuel CMS <span class="number">1.4</span><span class="number">.1</span> 远程代码执行漏洞</span><br><span class="line">Joomla <span class="number">3.4</span><span class="number">.5</span> 反序列化漏洞 CVE-<span class="number">2015</span>-<span class="number">8562</span></span><br><span class="line">Joomla <span class="number">3.7</span><span class="number">.0</span> SQL注入漏洞 CVE-<span class="number">2017</span>-<span class="number">8917</span>）</span><br><span class="line">Joomla 目录遍历及远程代码执行漏洞 CVE-<span class="number">2021</span>-<span class="number">23132</span></span><br><span class="line">Joomla权限绕过漏洞 CVE-<span class="number">2023</span>-<span class="number">23752</span></span><br><span class="line">JunAms内容管理系统文件上传漏洞 CNVD-<span class="number">2020</span>-<span class="number">24741</span></span><br><span class="line">Ke361 AuthManagerController.<span class="keyword">class</span>.php 后台SQL注入漏洞</span><br><span class="line">Ke361 DistrictController.<span class="keyword">class</span>.php 后台SQL注入漏洞 CNVD-<span class="number">2021</span>-<span class="number">25002</span></span><br><span class="line">Ke361 GoodsController.<span class="keyword">class</span>.php SSRF漏洞</span><br><span class="line">Ke361 MenuController.<span class="keyword">class</span>.php 后台SQL注入漏洞 CNVD-<span class="number">2021</span>-<span class="number">25002</span></span><br><span class="line">Ke361 TopicController.<span class="keyword">class</span>.php SQL注入漏洞 CNVD-<span class="number">2017</span>-04380</span><br><span class="line">Liferay Portal CE 反序列化命令执行漏洞 CVE-<span class="number">2020</span>-<span class="number">7961</span></span><br><span class="line">OKLite <span class="number">1.2</span><span class="number">.25</span> 后台插件安装 任意文件上传</span><br><span class="line">OKLite <span class="number">1.2</span><span class="number">.25</span> 后台模块导入 任意文件上传 CVE-<span class="number">2019</span>-<span class="number">16131</span></span><br><span class="line">OKLite <span class="number">1.2</span><span class="number">.25</span> 后台风格模块 任意文件删除 CVE-<span class="number">2019</span>-<span class="number">16132</span></span><br><span class="line">OneBlog 开源博客管理系统 远程命令执行漏洞</span><br><span class="line">OpenSNS Application ShareController.<span class="keyword">class</span>.php 远程命令执行漏洞</span><br><span class="line">OpenSNS AuthorizeController.<span class="keyword">class</span>.php 后台远程命令执行漏洞</span><br><span class="line">OpenSNS ChinaCityController.<span class="keyword">class</span>.php SQL注入漏洞</span><br><span class="line">OpenSNS CurlModel.<span class="keyword">class</span>.php SSRF漏洞</span><br><span class="line">OpenSNS ThemeController.<span class="keyword">class</span>.php 后台任意文件上传漏洞</span><br><span class="line">OpenSNS ThemeController.<span class="keyword">class</span>.php 后台任意文件下载漏洞</span><br><span class="line">Pb-CMS Shiro默认密钥 远程命令执行漏洞</span><br><span class="line">PbootCMS domain SQL注入漏洞</span><br><span class="line">PbootCMS ext_price SQL注入漏洞</span><br><span class="line">PbootCMS search SQL注入漏洞</span><br><span class="line">PbootCMS V3<span class="number">.1</span><span class="number">.2</span> 正则绕过 RCE 漏洞</span><br><span class="line">PigCMS action_flashUpload 任意文件上传漏洞</span><br><span class="line">ShopXO download 任意文件读取漏洞 CNVD-<span class="number">2021</span>-<span class="number">15822</span></span><br><span class="line">Tiki Wiki CMS Groupware 认证绕过漏洞 CVE-<span class="number">2020</span>-<span class="number">15906</span></span><br><span class="line">TypesetterCMS 后台任意文件上传</span><br><span class="line">UCMS 文件上传漏洞 CVE-<span class="number">2020</span>-<span class="number">25483</span></span><br><span class="line">WeiPHP3<span class="number">.0</span> session_id 任意文件上传漏洞</span><br><span class="line">-downloader.php 任意文件读取漏洞 CVE-<span class="number">2022</span>-<span class="number">1119</span></span><br><span class="line">WordPress SuperForms <span class="number">4.9</span> 任意文件上传到远程代码执行</span><br><span class="line">WordPress WP_Query SQL 注入漏洞 CVE-<span class="number">2022</span>-<span class="number">21661</span></span><br><span class="line">YzmCMS Version 小于V5<span class="number">.8</span>正式版 后台采集模块 SSRF漏洞</span><br><span class="line">ZZZCMS parserSearch 远程命令执行漏洞</span><br><span class="line">华宜互联 硬编码超级管理员漏洞</span><br><span class="line">原创先锋 后台管理平台 未授权访问漏洞</span><br><span class="line">发货<span class="number">100</span> M_id SQL注入漏洞 CNVD-<span class="number">2021</span>-<span class="number">30193</span></span><br><span class="line">快排CMS Socket.php 日志信息泄露漏洞</span><br><span class="line">快排CMS 后台XSS漏洞</span><br><span class="line">sql 后台SQL注入漏洞</span><br><span class="line">禅道 <span class="number">11.6</span> api-getModel-editor-save-filePath 任意文件写入漏洞</span><br><span class="line">禅道 <span class="number">12.4</span><span class="number">.2</span> CSRF漏洞 CNVD-<span class="number">2020</span>-<span class="number">68552</span></span><br><span class="line">禅道 <span class="number">12.4</span><span class="number">.2</span> 后台任意文件上传漏洞 CNVD-C-<span class="number">2020</span>-<span class="number">121325</span></span><br><span class="line">禅道 V16<span class="number">.5</span> SQL 注入 CNVD-<span class="number">2022</span>-<span class="number">42853</span></span><br><span class="line">禅道 项目管理系统远程命令执行漏洞 CNVD-<span class="number">2023</span>-02709</span><br><span class="line">齐博CMS V7 job.php 任意文件读取漏洞</span><br><span class="line">OA产品漏洞</span><br><span class="line"></span><br><span class="line">O2OA invoke 后台远程命令执行漏洞 CNVD-<span class="number">2020</span>-<span class="number">18740</span></span><br><span class="line">O2OA <span class="built_in">open</span> 后台任意文件读取漏洞</span><br><span class="line">一米OA getfile.jsp 任意文件读取漏洞</span><br><span class="line">万户OA DocumentEdit.jsp SQL注入漏洞</span><br><span class="line">万户OA download_ftp.jsp 任意文件下载漏洞</span><br><span class="line">万户OA download_old.jsp 任意文件下载漏洞</span><br><span class="line">台目录遍历漏洞</span><br><span class="line">信呼OA qcloudCosAction.php 任意文件上传漏洞</span><br><span class="line">华天动力OA <span class="number">8000</span>版 workFlowService SQL注入漏洞</span><br><span class="line">启莱OA CloseMsg.aspx SQL注入漏洞</span><br><span class="line">启莱OA messageurl.aspx SQL注入漏洞</span><br><span class="line">启莱OA treelist.aspx SQL注入漏洞</span><br><span class="line">漏洞</span><br><span class="line">泛微OA E-Cology HrmCareerApplyPerView.jsp SQL注入漏洞</span><br><span class="line">泛微OA E-Cology jqueryFileTree.jsp 目录遍历漏洞</span><br><span class="line">泛微OA E-cology KtreeUploadAction 任意文件上传</span><br><span class="line">泛微OA E-Cology LoginSSO.jsp SQL注入漏洞 CNVD-<span class="number">2021</span>-<span class="number">33202</span></span><br><span class="line">泛微OA E-Cology ofsLogin.jsp 前台任意用户登录漏洞</span><br><span class="line">泛微OA E-Cology users.data 敏感信息泄漏</span><br><span class="line">上传漏洞</span><br><span class="line">泛微OA E-Office UserSelect 未授权访问漏洞</span><br><span class="line">泛微OA E-Weaver SignatureDownLoad 任意文件读取漏洞</span><br><span class="line">泛微OA getdata.jsp SQL注入漏洞</span><br><span class="line">泛微OA ln.FileDownload 任意文件读取漏洞</span><br><span class="line">-C-<span class="number">2023</span>-<span class="number">76801</span></span><br><span class="line">用友 NC FileReceiveServlet 反序列化RCE漏洞</span><br><span class="line">用友 NC NCFindWeb 任意文件读取漏洞</span><br><span class="line">用友 NC XbrlPersistenceServlet反序列化</span><br><span class="line">用友 NCCloud FS文件管理SQL注入</span><br><span class="line">用友 U8 cloud upload.jsp 任意文件上传漏洞</span><br><span class="line">用友 U8 CRM客户关系管理系统 getemaildata.php 任意文件上传漏洞</span><br><span class="line">用友 U8 CRM客户关系管理系统 getemaildata.php 任意文件读取漏洞</span><br><span class="line">用友 U8 OA getSessionList.jsp 敏感信息泄漏漏洞</span><br><span class="line">用友 U8 OA test.jsp SQL注入漏洞</span><br><span class="line">用友 移动管理系统 uploadApk.do 任意文件上传漏洞</span><br><span class="line">用友时空 KSOA V9<span class="number">.0</span> 文件上传漏洞</span><br><span class="line">红帆OA ioFileExport.aspx 任意文件读取漏洞</span><br><span class="line">致翔OA msglog.aspx SQL注入漏洞</span><br><span class="line">致远OA A6 config.jsp 敏感信息泄漏漏洞</span><br><span class="line">致远OA A6 createMysql.jsp 数据库敏感信息泄露</span><br><span class="line">致远OA A6 DownExcelBeanServlet 用户敏感信息泄露</span><br><span class="line">致远OA A6 initDataAssess.jsp 用户敏感信息泄露</span><br><span class="line"></span><br><span class="line">蓝凌OA kmImeetingRes.do 后台SQL注入漏洞 CNVD-<span class="number">2021</span>-01363</span><br><span class="line">蓝凌OA sysSearchMain.do 远程命令执行漏洞</span><br><span class="line">蓝凌OA treexml.tmpl 远程命令执行漏洞</span><br><span class="line">通达OA v11<span class="number">.2</span> upload.php 后台任意文件上传漏洞</span><br><span class="line">通达OA v11<span class="number">.5</span> login_code.php 任意用户登录</span><br><span class="line">通达OA v11<span class="number">.5</span> logincheck_code.php 登陆绕过漏洞</span><br><span class="line">通达OA v11<span class="number">.5</span> swfupload_new.php SQL注入漏洞</span><br><span class="line"></span><br><span class="line">Web应用漏洞</span><br><span class="line"></span><br><span class="line"><span class="number">1039</span>家校通 万能密码绕过 CNVD-<span class="number">2020</span>-<span class="number">31494</span></span><br><span class="line"><span class="number">1039</span>家校通 后台任意文件上传漏洞</span><br><span class="line">1Panel loadfile 后台文件读取漏洞</span><br><span class="line"><span class="number">360</span>天擎 gettablessize 数据库信息泄露漏洞</span><br><span class="line">Crawlab users 任意用户添加漏洞</span><br><span class="line"></span><br><span class="line">GitLab Graphql邮箱信息泄露漏洞 CVE-<span class="number">2020</span>-<span class="number">26413</span></span><br><span class="line">GitLab SSRF漏洞 CVE-<span class="number">2021</span>-<span class="number">22214</span></span><br><span class="line"></span><br><span class="line">021-<span class="number">10543</span></span><br><span class="line">Metabase geojson 任意文件读取漏洞 CVE-<span class="number">2021</span>-<span class="number">41277</span></span><br><span class="line">-<span class="number">2019</span>-<span class="number">10758</span></span><br><span class="line">Nexus Repository Manager <span class="number">3</span> extdirect 远程命令执行漏洞 CVE-<span class="number">2019</span>-<span class="number">7238</span></span><br><span class="line">Nexus Repository Manager <span class="number">3</span> extdirect 远程命令执行漏洞 CVE-<span class="number">2020</span>-<span class="number">10204</span></span><br><span class="line">Nexus Repository Manager <span class="number">3</span> group 远程命令执行漏洞 CVE-<span class="number">2020</span>-<span class="number">10199</span></span><br><span class="line"></span><br><span class="line">Roxy-Wi options.py 远程命令执行漏洞 CVE-<span class="number">2022</span>-<span class="number">31137</span></span><br><span class="line"></span><br><span class="line">SpiderFlow save 远程命令执行漏洞</span><br><span class="line">TamronOS IPTV系统 ping 任意命令执行漏洞</span><br><span class="line">TamronOS IPTV系统 submit 任意用户创建漏洞</span><br><span class="line">XXL-JOB executor 未授权访问漏洞</span><br><span class="line">XXL-JOB 任务调度中心 后台任意命令执行漏洞</span><br><span class="line">天融信 DLP 未授权访问漏洞</span><br><span class="line">天融信 TopApp-LB enable_tool_debug.php 远程命令执行漏洞</span><br><span class="line"></span><br><span class="line">广联达 Linkworks GetIMDictionary SQL注入漏洞</span><br><span class="line">广联达 Linkworks msgbroadcastuploadfile.aspx 后台文件上传漏洞</span><br><span class="line">思迪数据 Home 登录绕过漏洞</span><br><span class="line">拓尔思 TRS testCommandExecutor.jsp 远程命令执行漏洞</span><br><span class="line">新开普 前置服务管理平台 service.action 远程命令执行漏洞</span><br><span class="line">昆石网络 VOS3000虚拟运营支撑系统 %c0%ae%c0%ae 任意文件读取漏洞</span><br><span class="line"></span><br><span class="line">深信服 日志中心 c.php 远程命令执行漏洞</span><br><span class="line">深信服 行为感知系统 c.php 远程命令执行漏洞</span><br><span class="line">瑞友 应用虚拟化系统 GetBSAppUrl SQL注入漏洞</span><br><span class="line">若依管理系统 后台任意文件读取 CNVD-<span class="number">2021</span>-01931</span><br><span class="line">飞企互联 FE业务协作平台 ShowImageServlet 任意文件读取漏洞</span><br><span class="line">飞视美 视频会议系统 Struts2 远程命令执行漏洞</span><br><span class="line">魅课 OM视频会议系统 proxy.php 文件包含漏洞</span><br><span class="line">默安 幻阵蜜罐未授权访问 RCE</span><br><span class="line">龙璟科技 电池能量BEMS downloads 任意文件下载漏洞</span><br><span class="line">中间件漏洞</span><br><span class="line"></span><br><span class="line">ACME Mini_httpd 任意文件读取漏洞 CVE-<span class="number">2018</span>-<span class="number">18778</span></span><br><span class="line">Adobe ColdFusion XML 反序列化命令执行漏洞 CVE-<span class="number">2023</span>-<span class="number">29300</span></span><br><span class="line">Apache Solr RemoteStreaming 文件读取与SSRF漏洞</span><br><span class="line">Apache Solr Replication Handler SSRF CVE <span class="number">2021</span> <span class="number">27905</span></span><br><span class="line"></span><br><span class="line">Consul Docker images 空密码登录漏洞 CVE-<span class="number">2020</span>-<span class="number">29564</span></span><br><span class="line">Consul Service API远程命令执行漏洞</span><br><span class="line">GeoServer OGC Filter SQL注入漏洞 CVE-<span class="number">2023</span>-<span class="number">25157</span></span><br><span class="line">GoAhead Server 环境变量注入 CVE-<span class="number">2021</span>-<span class="number">42342</span></span><br><span class="line">024-<span class="number">23897</span></span><br><span class="line">Jenkins script 未授权远程命令执行漏洞</span><br><span class="line">Jenkins XStream 反序列化漏洞 CVE-<span class="number">2016</span>-0792</span><br><span class="line">Jenkins 远程代码执行漏洞 CVE-<span class="number">2015</span>-<span class="number">8103</span></span><br><span class="line">Jenkins 远程代码执行漏洞 CVE-<span class="number">2019</span>-<span class="number">1003000</span></span><br><span class="line">Jenkins 远程命令执行漏洞 CVE-<span class="number">2018</span>-<span class="number">1000861</span></span><br><span class="line"></span><br><span class="line">SaltStack 任意文件读写漏洞 CVE-<span class="number">2020</span>-<span class="number">11652</span></span><br><span class="line">SaltStack 命令注入漏洞 CVE-<span class="number">2020</span>-<span class="number">16846</span></span><br><span class="line">Saltstack 未授权RCE漏洞 CVE-<span class="number">2021</span>-<span class="number">25281</span>~<span class="number">25283</span></span><br><span class="line">SaltStack 未授权访问命令执行漏洞 CVE-<span class="number">2020</span>-<span class="number">16846</span> <span class="number">25592</span></span><br><span class="line">SaltStack 水平权限绕过漏洞 CVE-<span class="number">2020</span>-<span class="number">11651</span></span><br><span class="line">Saltstack 远程命令执行漏洞 CVE-<span class="number">2020</span>-<span class="number">11651</span> <span class="number">11652</span></span><br><span class="line"></span><br><span class="line">Struts2 S2-009 远程代码执行漏洞</span><br><span class="line">Struts2 S2-012 远程代码执行漏洞</span><br><span class="line">Struts2 S2-013 远程代码执行漏洞</span><br><span class="line">Struts2 S2-015 远程代码执行漏洞</span><br><span class="line">Struts2 S2-016 远程代码执行漏洞 CVE-<span class="number">2013</span>-<span class="number">2251</span></span><br><span class="line">Struts2 S2-032 远程代码执行漏洞 CVE-<span class="number">2016</span>-<span class="number">3081</span></span><br><span class="line"></span><br><span class="line">WebLogic T3 反序列化漏洞 CVE-<span class="number">2016</span>-<span class="number">3510</span></span><br><span class="line">Weblogic uddiexplorer SSRF漏洞 CVE-<span class="number">2014</span>-<span class="number">4210</span></span><br><span class="line">Weblogic WLS Core Components 反序列化命令执行漏洞 CVE-<span class="number">2018</span>-<span class="number">2628</span></span><br><span class="line"></span><br><span class="line">Zabbix Server trapper命令注入漏洞 CVE-<span class="number">2017</span>-<span class="number">2824</span></span><br><span class="line">Zabbix Server trapper命令注入漏洞 CVE-<span class="number">2020</span>-<span class="number">11800</span></span><br><span class="line">云安全漏洞</span><br><span class="line"></span><br><span class="line">Docker daemon api 未授权访问漏洞 RCE</span><br><span class="line">漏洞 CVE-<span class="number">2021</span>-<span class="number">22005</span></span><br><span class="line">VMware vCenter Server 任意文件读取漏洞</span><br><span class="line">VMware vCenter Server 服务器端请求伪造漏洞 CVE-<span class="number">2021</span>-<span class="number">21973</span></span><br><span class="line">VMware vCenter Server 远程代码执行漏洞 CVE-<span class="number">2021</span>-<span class="number">21972</span></span><br><span class="line">其他漏洞</span><br><span class="line"></span><br><span class="line">DNS域传送漏洞</span><br><span class="line">Foxit PDF Reader 及 Editor 任意代码执行漏洞 CVE-<span class="number">2023</span>-<span class="number">27363</span></span><br><span class="line">Git <span class="keyword">for</span> Visual Studio远程执行代码漏洞 CVE-<span class="number">2021</span>-<span class="number">21300</span></span><br><span class="line">CVE-<span class="number">2021</span>-<span class="number">1056</span></span><br><span class="line">Samba 远程命令执行漏洞 CVE-<span class="number">2017</span>-<span class="number">7494</span></span><br><span class="line">Ueditor 编辑器漏洞总结</span><br><span class="line">Windows Chrome 远程命令执行漏洞</span><br><span class="line">微信客户端 远程命令执行漏洞</span><br><span class="line">腾讯 企业微信 agentinfo 信息泄漏漏洞</span><br><span class="line">开发框架漏洞</span><br><span class="line"></span><br><span class="line">Apache Commons Configuration 远程命令执行漏洞 CVE-<span class="number">2022</span>-<span class="number">33980</span></span><br><span class="line">Apache Commons Text 远程代码执行漏洞 CVE-<span class="number">2022</span>-<span class="number">42889</span></span><br><span class="line">Apache Dubbo Java反序列化漏洞CVE-<span class="number">2019</span>-<span class="number">17564</span></span><br><span class="line">Apache Flink 小于<span class="number">1.9</span><span class="number">.1</span>远程代码执行 CVE-<span class="number">2020</span>-<span class="number">17518</span></span><br><span class="line">Apache Flink 目录遍历漏洞 CVE-<span class="number">2020</span>-<span class="number">17519</span></span><br><span class="line">Apache OF Biz RMI 旁路 RCE CVE <span class="number">2021</span> <span class="number">29200</span></span><br><span class="line"></span><br><span class="line">Fastjson <span class="number">1.2</span><span class="number">.24</span> 反序列化导致任意命令执行漏洞</span><br><span class="line">Fastjson <span class="number">1.2</span><span class="number">.47</span> 远程命令执行漏洞</span><br><span class="line">Fastjson 远程代码执行漏洞 CVE-<span class="number">2022</span>-<span class="number">25845</span></span><br><span class="line">Flask Jinja2 服务端模板注入漏洞</span><br><span class="line">Jackson Databind SSRF RCE CVE <span class="number">2020</span> <span class="number">36179</span> <span class="number">36182</span></span><br><span class="line">E-<span class="number">2018</span>-<span class="number">3760</span></span><br><span class="line">Spring Cloud Config 目录遍历漏洞 CVE-<span class="number">2019</span>-<span class="number">3799</span></span><br><span class="line">Spring Cloud Function SPEL 远程命令执行漏洞</span><br><span class="line">Spring Cloud Function SpEL表达式命令注入 CVE-<span class="number">2022</span>-<span class="number">22963</span></span><br><span class="line"><span class="number">2020</span>-<span class="number">26259</span></span><br><span class="line">XStream 反序列化命令执行漏洞 CVE-<span class="number">2021</span>-<span class="number">21351</span></span><br><span class="line">XStream 反序列化命令执行漏洞 CVE-<span class="number">2021</span>-<span class="number">29505</span></span><br><span class="line">开发语言漏洞</span><br><span class="line"></span><br><span class="line">Java RMI Registry 反序列化漏洞(=jdk8u111)</span><br><span class="line"></span><br><span class="line">Python PIL 远程命令执行漏洞 CVE-<span class="number">2018</span>-<span class="number">16509</span></span><br><span class="line">Python pip install RCE 漏洞 CVE-<span class="number">2013</span>-<span class="number">1629</span></span><br><span class="line">Python unpickle 造成任意命令执行漏洞</span><br><span class="line">操作系统漏洞</span><br><span class="line"></span><br><span class="line">Linux DirtyPipe 权限提升漏洞 CVE-<span class="number">2022</span>-0847</span><br><span class="line">Linux eBPF 权限提升漏洞 CVE-<span class="number">2022</span>-<span class="number">23222</span></span><br><span class="line">Linux kernel 权限提升漏洞 CVE-<span class="number">2021</span>-<span class="number">3493</span></span><br><span class="line">-<span class="number">6271</span></span><br><span class="line">Windows CryptoAPI 欺骗漏洞 CVE-<span class="number">2020</span>-0601</span><br><span class="line">Windows SMB 远程代码执行漏洞 CVE-<span class="number">2020</span>-0796</span><br><span class="line">Windows Win32k 内核提权漏洞 CVE-<span class="number">2022</span>-<span class="number">21882</span></span><br><span class="line">Windows Win32k 本地提权漏洞 CVE-<span class="number">2021</span>-<span class="number">1732</span></span><br><span class="line">Windows 远程桌面服务漏洞 CVE-<span class="number">2019</span>-0708</span><br><span class="line"></span><br><span class="line">数据库漏洞</span><br><span class="line"></span><br><span class="line">Apache CouchDB epmd 远程命令执行漏洞 CVE-<span class="number">2022</span>-<span class="number">24706</span></span><br><span class="line">Apache CouchDB 任意命令执行漏洞 CVE-<span class="number">2017</span>-<span class="number">12636</span></span><br><span class="line">Apache CouchDB 分布式协议代码执行 CVE-<span class="number">2022</span>-<span class="number">24706</span></span><br><span class="line">Apache CouchDB 垂直权限绕过漏洞 CVE-<span class="number">2017</span>-<span class="number">12635</span></span><br><span class="line"></span><br><span class="line">MySQL UDF 提权漏洞</span><br><span class="line">MySQL 身份认证绕过漏洞 CVE-<span class="number">2012</span>-<span class="number">2122</span></span><br><span class="line">Neo4j Shell Server 反序列化漏洞 CVE-<span class="number">2021</span>-<span class="number">34371</span></span><br><span class="line">E-<span class="number">2022</span>-0543</span><br><span class="line">Redis 小于<span class="number">5.0</span><span class="number">.5</span> 主从复制 RCE</span><br><span class="line">网络设备漏洞</span><br><span class="line"></span><br><span class="line">ACTI 视频监控 images 任意文件读取漏洞</span><br><span class="line">Amcrest IP Camera Web Sha1Account1 账号密码泄漏漏洞 CVE-<span class="number">2017</span>-<span class="number">8229</span></span><br><span class="line">Apache APISIX Dashboard API权限绕过导致RCE CVE-<span class="number">2021</span>-<span class="number">45232</span></span><br><span class="line">Apache APISIX 默认密钥漏洞 CVE-<span class="number">2020</span>-<span class="number">13945</span></span><br><span class="line">Arcadyan固件 cgi_i_filter.js 配置信息泄漏漏洞 CVE-<span class="number">2021</span>-<span class="number">20092</span></span><br><span class="line"></span><br><span class="line">D-Link DAP-<span class="number">2020</span> webproc 任意文件读取漏洞 CVE-<span class="number">2021</span>-<span class="number">27250</span></span><br><span class="line">D-Link DAR-<span class="number">8000</span> importhtml.php 远程命令执行漏洞</span><br><span class="line">D-Link DCS系列监控 账号密码信息泄露漏洞 CVE-<span class="number">2020</span>-<span class="number">25078</span></span><br><span class="line">D-Link DIR-<span class="number">645</span> getcfg.php 账号密码泄露漏洞 CVE-<span class="number">2019</span>-<span class="number">17506</span></span><br><span class="line">D-Link DIR-<span class="number">802</span> 命令注入漏洞 CVE-<span class="number">2021</span>-<span class="number">29379</span></span><br><span class="line">D-Link DIR-<span class="number">841</span> 命令注入漏洞 CVE-<span class="number">2021</span>-<span class="number">28143</span></span><br><span class="line">D-Link DIR-<span class="number">846</span> 命令注入漏洞 CVE-<span class="number">2020</span>-<span class="number">27600</span></span><br><span class="line">用户登录漏洞</span><br><span class="line">HIKVISION DSIDSIPC 等设备 远程命令执行漏洞 CVE-<span class="number">2021</span>-<span class="number">36260</span></span><br><span class="line">e.php 任意文件下载漏洞</span><br><span class="line">HIKVISION 综合安防管理平台 applyCT Fastjson远程命令执行漏洞</span><br><span class="line">HIKVISION 综合安防管理平台 env 信息泄漏漏洞</span><br><span class="line">HIKVISION 综合安防管理平台 files 任意文件上传漏洞</span><br><span class="line">HIKVISION 综合安防管理平台 report 任意文件上传漏洞</span><br><span class="line">HIKVISION 联网网关 downdb.php 任意文件读取漏洞</span><br><span class="line">Huawei DG8045 deviceinfo 信息泄漏漏洞</span><br><span class="line">Huawei HG659 lib 任意文件读取漏洞</span><br><span class="line">iKuai 后台任意文件读取漏洞</span><br><span class="line">iKuai 流控路由 SQL注入漏洞</span><br><span class="line"></span><br><span class="line">NetMizer 日志管理系统 登录绕过漏洞</span><br><span class="line">Panabit iXCache date_config 后台命令执行漏洞</span><br><span class="line"></span><br><span class="line">中国移动 禹路由 simple-index.asp 越权访问漏洞 CNVD-<span class="number">2020</span>-<span class="number">55983</span></span><br><span class="line">中科网威 NPFW防火墙 CommandsPolling.php 任意文件读取漏洞</span><br><span class="line">小米 路由器 c_upload 远程命令执行漏洞 CVE-<span class="number">2019</span>-<span class="number">18370</span></span><br><span class="line">小米 路由器 extdisks 任意文件读取漏洞 CVE-<span class="number">2019</span>-<span class="number">18371</span></span><br><span class="line"><span class="number">1</span>-<span class="number">31758</span></span><br><span class="line">NVD-<span class="number">2021</span>-<span class="number">14536</span></span><br><span class="line"> login_judge.jsf 任意文件读取漏洞</span><br><span class="line">飞鱼星 企业级智能上网行为管理系统 权限绕过信息泄露漏洞</span><br><span class="line">飞鱼星 家用智能路由 cookie.cgi 权限绕过</span><br><span class="line">齐治堡垒机 gui_detail_view.php 任意用户登录漏洞</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="历史漏洞库与知识库分享"><a href="#历史漏洞库与知识库分享" class="headerlink" title="历史漏洞库与知识库分享"></a>历史漏洞库与知识库分享</h1><h2 id="1-bugbank的技能库-帮你建立web渗透的学习路线"><a href="#1-bugbank的技能库-帮你建立web渗透的学习路线" class="headerlink" title="1.bugbank的技能库(帮你建立web渗透的学习路线)"></a>1.bugbank的技能库(帮你建立web渗透的学习路线)</h2><p>   这里可以根据技能表,并且点击每一个对应的技能都会有对应的安全技能的只识和案例进行学习和使用和学习.</p>
+<p><a target="_blank" rel="noopener" href="https://skills.bugbank.cn/">bugbank技能表https://skills.bugbank.cn/</a></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302235291.png"></p>
+<h2 id="2-狼组安全团队公开知识库"><a href="#2-狼组安全团队公开知识库" class="headerlink" title="2.狼组安全团队公开知识库"></a>2.狼组安全团队公开知识库</h2><p>  这个知识库是我第一个学习和使用的安全知识库,看内容就知道比较全面了,从ctf到安全基础到最后的代码审计,当然代码审计内容还是比较少的.</p>
+<p><a target="_blank" rel="noopener" href="https://wiki.wgpsec.org/knowledge/code-audit/php-code-audit.html">PHP代码审计基础知识 | 狼组安全团队公开知识库 (wgpsec.org)https://wiki.wgpsec.org/knowledge/code-audit/php-code-audit.html</a></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302236725.png"></p>
+<h2 id="3-Web安全学习笔记"><a href="#3-Web安全学习笔记" class="headerlink" title="3.Web安全学习笔记"></a>3.Web安全学习笔记</h2><p>​    由某个大佬编写的笔记,包含整个web安全学习的所有基础知识以及需要学习的知识</p>
+<p><a target="_blank" rel="noopener" href="https://websec.readthedocs.io/zh/latest/">Web安全学习笔记 — Web安全学习笔记 1.0 文档 (websec.readthedocs.io)https://websec.readthedocs.io/zh/latest/</a></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302236191.png"></p>
+<h2 id="4-看雪知识库"><a href="#4-看雪知识库" class="headerlink" title="4.看雪知识库"></a>4.看雪知识库</h2><p>​            记得需要登录后,才可以查看,包含你能想到的所有知识</p>
+<p><a target="_blank" rel="noopener" href="https://www.kanxue.com/chm.htm">看雪知识库https://www.kanxue.com/chm.htm</a></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302236648.png"></p>
+<h2 id="5-安全知识库"><a href="#5-安全知识库" class="headerlink" title="5.安全知识库"></a>5.安全知识库</h2><p>​                               反正资源和可以学习的知识比较全面,包含各种可以学习的知识</p>
+<p><a target="_blank" rel="noopener" href="https://wintrysec.github.io/">项目主页 | 网络安全知识库 (wintrysec.github.io)</a></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302236827.png"></p>
+<h2 id="6-红队和蓝队资料集锦"><a href="#6-红队和蓝队资料集锦" class="headerlink" title="6.红队和蓝队资料集锦"></a>6.红队和蓝队资料集锦</h2><p>​                     <strong>包含学习和红队和蓝队的所有资料</strong>(比较全面)</p>
+<p><a target="_blank" rel="noopener" href="https://www.lshack.cn/772/">红队和蓝队资料集锦 - lsh4ck’s Blog (lshack.cn)https://www.lshack.cn/772/</a></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302236447.png"></p>
+<h2 id="7-黑客街"><a href="#7-黑客街" class="headerlink" title="7.黑客街"></a>7.黑客街</h2><p>​       是一个安全学习导航,包含各种工具以及学习渗透测试的工具库与漏洞库</p>
+<p><a target="_blank" rel="noopener" href="https://www.hackjie.com/wiki">黑客街https://www.hackjie.com/wiki</a></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302236916.png"></p>
+<h2 id="8-佩奇库"><a href="#8-佩奇库" class="headerlink" title="8.佩奇库"></a>8.佩奇库</h2><blockquote>
+<p>   PeiQi文库是一个面对网络安全从业者的知识库，涉及漏洞研究，代码审计，CTF夺旗，红蓝对抗等多个安全方向，用于解决安全信息不聚合，安全资料不易找的难题。帮助网络安全从业者共同构建安全的互联网，快速验证并及时修复相关漏洞，为甲方等提出安全建设意见。</p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://peiqi.wgpsec.org/about/">文库介绍 | PeiQi文库 (wgpsec.org)https://peiqi.wgpsec.org/about/</a></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404302236296.png"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><blockquote>
+<p>​    发现在网站上还没有一个体系的和总结知识库与学习的文章,可以方便小白进行学习和使用,并且在护网来临之际进行总结方便日常学习的使用 </p>
+</blockquote>
+
+    </article>
+    
+    <div class="read-nums">
+      <!-- id 将作为查询条件 -->
+      <span id="2024/04/30/2024HVV在即-最新漏洞CVE库-1-5W-与历史漏洞POC总结分享/" class="leancloud_visitors" data-flag-title="Your Article Title">
+        <em class="post-meta-item-text">浏览量</em>
+        <i class="leancloud-visitors-count"></i>
+      </span>
+    </div>
+    <div class="comments-intro">
+      <h2>评论区</h2>
+      <p>欢迎你留下宝贵的意见，昵称输入QQ号会显示QQ头像哦~</p>
+    </div>
+    <div id="vcomments" class="vcomments"></div>
+    
+  </div>
+  <div class="article-catelogue">
+    <div class="article-catelogue--wrapper">
+      <div class="catelogue catelogue-1">
+        <h3>目录</h3>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%8D%E8%B4%A3%E5%A3%B0%E6%98%8E"><span class="toc-number">1.1.</span> <span class="toc-text">免责声明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E4%BA%AB%E5%A3%B0%E6%98%8E"><span class="toc-number">1.2.</span> <span class="toc-text">分享声明</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text"></span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%80%E8%BF%91%E6%BC%8F%E6%B4%9E%E5%BA%93%E5%88%86%E4%BA%AB"><span class="toc-number">3.</span> <span class="toc-text">最近漏洞库分享</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%8E%A5%E8%BF%911-5W%E6%9D%A1CVE%E7%9A%84poc"><span class="toc-number">3.1.</span> <span class="toc-text">1.接近1.5W条CVE的poc</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%B8%80%E4%B8%AA%E6%BC%8F%E6%B4%9EPOC%E7%9F%A5%E8%AF%86%E5%BA%93"><span class="toc-number">3.2.</span> <span class="toc-text">2.一个漏洞POC知识库</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8E%86%E5%8F%B2%E6%BC%8F%E6%B4%9E%E5%BA%93%E4%B8%8E%E7%9F%A5%E8%AF%86%E5%BA%93%E5%88%86%E4%BA%AB"><span class="toc-number">4.</span> <span class="toc-text">历史漏洞库与知识库分享</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-bugbank%E7%9A%84%E6%8A%80%E8%83%BD%E5%BA%93-%E5%B8%AE%E4%BD%A0%E5%BB%BA%E7%AB%8Bweb%E6%B8%97%E9%80%8F%E7%9A%84%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF"><span class="toc-number">4.1.</span> <span class="toc-text">1.bugbank的技能库(帮你建立web渗透的学习路线)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%8B%BC%E7%BB%84%E5%AE%89%E5%85%A8%E5%9B%A2%E9%98%9F%E5%85%AC%E5%BC%80%E7%9F%A5%E8%AF%86%E5%BA%93"><span class="toc-number">4.2.</span> <span class="toc-text">2.狼组安全团队公开知识库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Web%E5%AE%89%E5%85%A8%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0"><span class="toc-number">4.3.</span> <span class="toc-text">3.Web安全学习笔记</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%9C%8B%E9%9B%AA%E7%9F%A5%E8%AF%86%E5%BA%93"><span class="toc-number">4.4.</span> <span class="toc-text">4.看雪知识库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%AE%89%E5%85%A8%E7%9F%A5%E8%AF%86%E5%BA%93"><span class="toc-number">4.5.</span> <span class="toc-text">5.安全知识库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E7%BA%A2%E9%98%9F%E5%92%8C%E8%93%9D%E9%98%9F%E8%B5%84%E6%96%99%E9%9B%86%E9%94%A6"><span class="toc-number">4.6.</span> <span class="toc-text">6.红队和蓝队资料集锦</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E9%BB%91%E5%AE%A2%E8%A1%97"><span class="toc-number">4.7.</span> <span class="toc-text">7.黑客街</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E4%BD%A9%E5%A5%87%E5%BA%93"><span class="toc-number">4.8.</span> <span class="toc-text">8.佩奇库</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
+      </div>
+      
+        <div class="catelogue catelogue-2">
+           
+          
+            <p>
+              <span>下一篇</span>
+              <a href="/2024/04/30/安全开发实战-6-对fofa收集的漏洞资产使用poc进行批量验证/">安全开发实战(6)---对fofa收集的漏洞资产使用poc进行批量验证</a>
+            </p>
+          
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // var定义，避免pjax重新进来造成的重复声明错误
+  var config = JSON.parse('{"enable":true,"appId":"Pf8zCXGEH1qsprnWfikVVujL-gzGzoHsz","appKey":"qOqoiUHhH1TGtLRUYURkLRQX","placeholder":"请留下你宝贵的意见吧~","meta":["nick"],"recordIP":true,"visitor":true,"enableQQ":true}')
+  new Valine({
+    el: '#vcomments',
+    appId: config.appId,
+    appKey: config.appKey,
+    placeholder: config.placeholder,
+    meta: config.meta,
+    recordIP: config.recordIP,
+    visitor: config.visitor,
+    enableQQ: config.enableQQ,
+    path: '2024/04/30/2024HVV在即-最新漏洞CVE库-1-5W-与历史漏洞POC总结分享/'
+  })
+</script>
+
+
+<script>
+  $(document).on('pjax:complete', function() {
+    const tocs = document.querySelector('.toc')
+    const links = tocs ? tocs.querySelectorAll('a') : []
+    links.forEach(link => {
+      link.addEventListener('click', e => {
+        const href = decodeURIComponent(e.href)
+        href.search(/#(.*)/)
+        const id = RegExp.$1
+        const target = document.querySelector('#' + id)
+        const top = target.offsetTop
+        document.documentElement.scrollTo({
+          top: top - 100,
+          behavior: 'smooth'
+        })
+        e.preventDefault()
+      })
+    })
+  })
+</script> 
+
+</div>
+      <div class="main-right-wrapper"><div class="main-right">
+  <div class="main-right--board">
+    <div class="main-right--title">
+      <h5>公告栏</h5>
+      <i class="iconfont icon-gonggao"></i>
+    </div>
+    <div class="main-right--content">
+      Hello~大噶好。唔系小鱼，欢迎你们来到我的博客小站，希望能在这里收获到有用的东西哦！ 
+    </div>
+  </div>
+
+  <div id="aplayer" class="main-right--music"></div>
+
+  <div class="operate-items">
+    <div class="operate-item backtop">
+      <i class="iconfont icon-huidaodingbu"></i>
+      <span>回到顶部</span>
+    </div>
+    
+    <div class="operate-item turn-comment hidden">
+      <i class="iconfont icon-pinglun"></i>
+      <span>查看评论</span>
+    </div>
+    
+  </div>
+
+  <div class="main-right--site">
+    <div class="main-right--power">
+      <p>Power By <a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/">Hexo</a>.</p>
+      <p>Theme：<a target="_blank" rel="noopener" href="https://github.com/Aizener/hexo-theme-cola">Cola.</a></p>
+    </div>
+    <p class="main-right--refer"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/#/Integrated/index">暂无</a> </p>
+  </div>
+</div>
+
+<script>
+  function setOperateItem () {
+    const reg = /\d{4}\/\d{2}\/\d{2}\/.+/
+    const path = location.pathname
+    const operateDom = document.querySelector('.main-right .operate-items')
+    const commentDom = document.querySelector('.turn-comment')
+    const cateloguDom = document.querySelector('.article-catelogue > .article-catelogue--wrapper');
+
+    if (commentDom) {
+      if (reg.test(path) || path.match(/\/log\/.+/)) {
+        commentDom.classList.remove('hidden')
+        const newDom = operateDom.cloneNode(true);
+        const _backtopDom = newDom.querySelector('.backtop');
+        const _commentDom = newDom.querySelector('.turn-comment');
+        _backtopDom.addEventListener('click', () => backTopEvent());
+        _commentDom.addEventListener('click', () => commentDomEvent());
+        cateloguDom.appendChild(newDom);
+      } else {
+        commentDom.classList.add('hidden')
+      }
+    }
+  }
+
+  setOperateItem()
+  const musics = JSON.parse(`[{"name":"安河桥","artist":"宋冬野","url":"http://ting6.yymp3.net:82/new25/songdongye/11.mp3","cover":"https://img2.baidu.com/it/u=1260056724,1076343118&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"},{"name":"卡布达","artist":"暂无","url":"music/kabuda.mp3","cover":"https://img2.baidu.com/it/u=705831265,2862720033&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"}]`)
+  const ap = new APlayer({
+    container: document.querySelector('#aplayer'),
+    audio: musics,
+  })
+
+  $(document).on('pjax:complete', function() {
+    setOperateItem()
+  })
+
+  document.querySelector('.backtop').addEventListener('click', () => {
+    backTopEvent();
+  })
+  const dom = document.querySelector('.turn-comment')
+  dom && dom.addEventListener('click', () => {
+    commentDomEvent();
+  })
+
+  function backTopEvent() {
+    document.documentElement.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+
+  function commentDomEvent() {
+    const commentDom = document.querySelector('.comments-intro')
+    if (!commentDom) return
+    const top = commentDom.offsetTop, height = commentDom.offsetHeight
+    document.documentElement.scrollTo({
+      top: top - 2 * height,
+      behavior: 'smooth'
+    })
+  }
+</script></div>
+    </section>
+  </div>
+  <div id="progress" class="progress"></div>
+  <div id="gray" class="gray"></div>
+
+  <script>
+    function initScroll () {
+      document.addEventListener('scroll', () => {
+        const doc = document.documentElement
+        const scrollTop = doc.scrollTop
+        const pageHeight = doc.offsetHeight
+        const clientHeight = doc.clientHeight
+        const ratio = scrollTop / (pageHeight - clientHeight)
+        const progress = document.querySelector('#progress')
+        const avatarImg = document.querySelector('.main-left--avatar')
+        progress.style.width = (100 * ratio) + '%'
+        avatarImg.style.transform = `rotate(${360 * ratio}deg)`
+      })
+    }
+
+    const rootPath = "/"
+
+    const checkAndSetArticlePageLayout = () => {
+      const path = location.pathname.replace(rootPath, '');
+      if (
+        /^\/?\d{4}\/\d{2}\/\d{2}\/.*/.test(path) ||
+        /^log\/.+/.test(path)
+      ) {
+        $('.main-container, .main-right, .main-right-wrapper').addClass('is-article')
+      } else {
+        $('.main-container, .main-right, .main-right-wrapper').removeClass('is-article')
+      }
+    }
+
+    const gray = "none"
+    const setGrayStyle = () => {
+      if (gray === 'none') {
+        return
+      } else if (gray === 'index') {
+        location.pathname === '/' ? $('#gray').show() : $('#gray').hide()
+      } else if (gray === 'all') {
+        $('#gray').show()
+      }
+    }
+    setGrayStyle()
+
+
+    window.onload = function () {
+      checkAndSetArticlePageLayout()
+      setTimeout(() => {
+        $('#load').slideUp()
+        $('#container').slideToggle()
+        setTimeout(() => {
+          initScroll();
+        }, 500)
+      }, 500)
+    }
+    
+    let status = 0
+    // 对所有链接跳转事件绑定pjax容器container
+    $(document).pjax('a[target!=_blank]', '#main-container', {
+      container: '#main-container',
+      fragment: '#main-container',
+      timeout: 8000
+    })
+
+    $(document).on('pjax:start', function() {
+    })
+    $(document).on('pjax:complete', function() {
+      status = 0
+      $('.main-container').addClass('to-up').on('animationend', function() {
+        $(this).removeClass('to-up')
+      })
+      setGrayStyle()
+      checkAndSetArticlePageLayout()
+    })
+    $(document).on('pjax:popstate', function() {
+      status = -1
+      checkAndSetArticlePageLayout()
+    });
+  </script>
+</body>
+</html>
