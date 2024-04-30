@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>我的技术与生活——小站首页 | Hexo</title>
+  <title>我的技术与生活——安全开发实战(2)---域名反查IP | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/css/public.css" />
@@ -16,7 +16,7 @@
 
   <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
   <script>
-    document.title = `我的技术与生活——小站首页`
+    document.title = `我的技术与生活——安全开发实战(2)---域名反查IP`
   </script>
 <meta name="generator" content="Hexo 7.1.1"></head>
 
@@ -344,138 +344,146 @@
     </div>
   </div>
 </div></div>
-      <div id="main-container" class="main-container"><link rel="stylesheet" href="/css/partial/index.css" />
+      <div id="main-container" class="main-container">
 
 
+  <link rel="stylesheet" href="/css/partial/article.css" />
 
-<div class="index">
-  <div class="index-left">
-    
-      <div class="index-article">
-        <!-- <img class="index-article--cover" src="/imgs/default-cover.webp" alt=""> -->
-        <div class="index-article--box">
-          <img class="index-article--cover" data-cover="imgs/default-cover.webp" alt="记第一次eudsrc拿到RCE(下)" />
-        </div>
-        <div class="index-article--content">
-          <a href="/2024/04/06/%E8%AE%B0%E7%AC%AC%E4%B8%80%E6%AC%A1eudsrc%E6%8B%BF%E5%88%B0RCE-%E4%B8%8B/">记第一次eudsrc拿到RCE(下) </a>
-          <div>
-            
-              <p>
-                <a class="post-category-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E2%97%86RCE/">渗透测试◆RCE</a>, <a class="post-category-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E2%97%86%E5%AE%9E%E6%88%98%E5%88%86%E4%BA%AB/">渗透测试◆实战分享</a>
-              </p>
-            
-            
-              <p>
-                <a class="-link" href="/tags/edusrc/" rel="tag">edusrc</a>
-              </p>
-            
+<div class="article-container">
+  <div class="article">
+    <h1 class="article-title">安全开发实战(2)---域名反查IP</h1>
+    <div class="article-info">
+      <div class="article-info--item">
+        <div class="article-info--info">
+          
+          <div class="article-info--categories">
+            <span>分类：</span>
+            <a class="category-link" href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/">安全开发</a>
           </div>
-          <div class="bg"></div>
+          
+          
+          <div class="article-info--tags">
+            <span>标签：</span>
+            <a class="tag-link" href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" rel="tag">渗透测试</a>
+          </div>
+          
+          <p class="article-info--date">日期：2024-04-30 13:48:05</p>
         </div>
+        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
       </div>
+    </div>
+    <article class="article-content markdown-body">
+      <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">这步是比较关键的一步,一般进行cdn监测后,获取到真实ip地址后,或是域名时,然后进行域名反查IP地址,进行进一步的端口扫描</span><br></pre></td></tr></table></figure>
+
+<h2 id="域名与ip的关系"><a href="#域名与ip的关系" class="headerlink" title="域名与ip的关系"></a>域名与ip的关系</h2><p>​    域名与 IP 地址之间的关系是通过 DNS（Domain Name System，域名系统）建立的。DNS 是一个将域名映射到 IP 地址的分布式数据库系统。域名是人们容易记忆的字符串，而 IP 地址则是计算机网络中唯一标识主机的数字标识。通过将域名与 IP 地址进行映射，DNS 允许用户通过输入易记的域名来访问网络资源，而无需记住复杂的 IP 地址。</p>
+<h2 id="域名反查ip的作用"><a href="#域名反查ip的作用" class="headerlink" title="域名反查ip的作用"></a>域名反查ip的作用</h2><p>   在渗透测试中，域名反查 IP（Inverse DNS Lookup）的作用是将一个给定的域名转换为其对应的 IP 地址。这项技术可以用来确定特定域名背后的服务器或主机的真实 IP 地址,可以帮助我们识别潜在的目标系统，并进一步进行目标侦察和漏洞分析。通过了解特定域名背后的真实 IP 地址，我们可以针对性地进行攻击或评估系统的安全性。    </p>
+<p>​	最重要的一点是通过域名反查 IP 还可以用于检测可能存在的 DNS 劫持或欺骗等攻击，因为它提供了域名和实际 IP 地址之间的映射关系，可以帮助识别潜在的不正常情况。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">比如最近教育src出现的提交安全情报中,可以通过查看是否存在DNS劫持,来判断教育网站是否存在安全威胁</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="1-2-1-One"><a href="#1-2-1-One" class="headerlink" title="1.2.1 One"></a>1.2.1 One</h4><p>直接使用socket.gethostbyname()方法进行获取域名的ip地址,下面是返回的ip地址,当然不是真实ip</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 先判断是否有cdn后,然后有需要的话通过域名反查IP地址</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line">ip = socket.gethostbyname(<span class="string">&#x27;www.baidu.com&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(ip)</span><br></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">36.155</span><span class="number">.132</span><span class="number">.76</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<h4 id="1-2-2-Two"><a href="#1-2-2-Two" class="headerlink" title="1.2.2 Two"></a>1.2.2 Two</h4><p>这里先增加一个可以输入ip地址,然后输出</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> socket</span><br><span class="line">ip = <span class="built_in">str</span>(<span class="built_in">input</span>(<span class="string">&#x27;请输入IP地址：&#x27;</span>))</span><br><span class="line">ip = socket.gethostbyname(<span class="string">f&#x27;<span class="subst">&#123;ip&#125;</span>&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(ip)</span><br></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-2-%E5%9F%9F%E5%90%8D%E5%8F%8D%E6%9F%A5IP/766d922618014086bfbd34a44eba7610.png" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<h4 id="1-2-3-批量监测"><a href="#1-2-3-批量监测" class="headerlink" title="1.2.3 批量监测"></a>1.2.3 批量监测</h4><p>   可以批量进行域名批量反查ip地址,中间出现过一次问题,问题解决方案在上一篇的那个cdn遇到的是一致的,但是,这次会导致,读取域名时使用f.readlines()时会导致,读取的url中会自动增加上&#x2F;n,导致域名查询ip地址时出现错误</p>
+<p><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-2-%E5%9F%9F%E5%90%8D%E5%8F%8D%E6%9F%A5IP/3f1f2c5489644f5987ca4be109f4f393.png" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 先判断是否有cdn后,然后有需要的话通过域名反查IP地址</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;url.txt&quot;</span>, <span class="string">&quot;r&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    <span class="keyword">for</span> url <span class="keyword">in</span> f.readlines():</span><br><span class="line">        url = url.rstrip()  <span class="comment"># 去掉换行符</span></span><br><span class="line">        ip = socket.gethostbyname(url)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;<span class="subst">&#123;url&#125;</span> : <span class="subst">&#123;ip&#125;</span>&#x27;</span>)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;ip.txt&quot;</span>, <span class="string">&quot;a+&quot;</span>) <span class="keyword">as</span> w:</span><br><span class="line">            w.write(<span class="string">f&#x27;<span class="subst">&#123;url&#125;</span> : <span class="subst">&#123;ip&#125;</span>&#x27;</span>+<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>url.txt</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">www.baidu.com</span><br><span class="line">www.bing.com</span><br></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p>ip.txt</p>
+<p><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-2-%E5%9F%9F%E5%90%8D%E5%8F%8D%E6%9F%A5IP/2a6e9fbd541645b4a6905d0066de528f.png" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-2-%E5%9F%9F%E5%90%8D%E5%8F%8D%E6%9F%A5IP/9817f07d83f94ee8b20e755f26eff91e.png" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动">总结</h1><p>域名反查ip对于进行进一步渗透测试也是比较关键的一步,其实说更具体一点是查找真实ip地址,这里就是同写个小脚本,查询域名的ip地址,没什么含金量,主要是能够帮助我们在渗透中节省时间.</p>
+
+    </article>
+    
+    <div class="read-nums">
+      <!-- id 将作为查询条件 -->
+      <span id="2024/04/30/安全开发实战-2-域名反查IP/" class="leancloud_visitors" data-flag-title="Your Article Title">
+        <em class="post-meta-item-text">浏览量</em>
+        <i class="leancloud-visitors-count"></i>
+      </span>
+    </div>
+    <div class="comments-intro">
+      <h2>评论区</h2>
+      <p>欢迎你留下宝贵的意见，昵称输入QQ号会显示QQ头像哦~</p>
+    </div>
+    <div id="vcomments" class="vcomments"></div>
     
   </div>
-  <div class="index-center">
-    
-      <div class="index-article">
-        <!-- <img class="index-article--cover" data-cover="" src="/imgs/default-cover.webp" alt=""> -->
-        <div class="index-article--box">
-          <img class="index-article--cover" data-cover="imgs/default-cover.webp" alt="记第一次eudsrc拿到RCE(上)" />
-        </div>
-        <div class="index-article--content">
-          <a href="/2024/04/05/%E8%AE%B0%E7%AC%AC%E4%B8%80%E6%AC%A1edusrc%E6%8B%BF%E5%88%B0RCE-%E4%B8%8A/">记第一次eudsrc拿到RCE(上) </a>
-          <div>
-            
-              <p>
-                <a class="category-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E2%97%86RCE/">渗透测试◆RCE</a>, <a class="category-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E2%97%86%E5%AE%9E%E6%88%98%E5%88%86%E4%BA%AB/">渗透测试◆实战分享</a>
-              </p>
-            
-            
-              <p>
-                <a class="-link" href="/tags/edusrc/" rel="tag">edusrc</a>
-              </p>
-            
-          </div>
-          <div class="bg"></div>
-        </div>
+  <div class="article-catelogue">
+    <div class="article-catelogue--wrapper">
+      <div class="catelogue catelogue-1">
+        <h3>目录</h3>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%9F%E5%90%8D%E4%B8%8Eip%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">1.1.</span> <span class="toc-text">域名与ip的关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%9F%E5%90%8D%E5%8F%8D%E6%9F%A5ip%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">1.2.</span> <span class="toc-text">域名反查ip的作用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-1-One"><span class="toc-number">1.2.0.1.</span> <span class="toc-text">1.2.1 One</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-2-Two"><span class="toc-number">1.2.0.2.</span> <span class="toc-text">1.2.2 Two</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-3-%E6%89%B9%E9%87%8F%E7%9B%91%E6%B5%8B"><span class="toc-number">1.2.0.3.</span> <span class="toc-text">1.2.3 批量监测</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">2.</span> <span class="toc-text">总结</span></a></li></ol>
       </div>
-    
-  </div>
-  <div class="index-right">
-    <div class="index-right-wrapper">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Hexo/">Hexo</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E5%AE%9E%E6%88%98/">代码审计实战</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/">安全开发</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E2%97%86RCE/">渗透测试◆RCE</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E2%97%86%E5%AE%9E%E6%88%98%E5%88%86%E4%BA%AB/">渗透测试◆实战分享</a></li></ul>
-      <ul class="tags" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" rel="tag">渗透测试</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%B8%97%E9%80%8F%E5%AD%A6%E4%B9%A0/" rel="tag">渗透学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B0%8F%E7%A8%8B%E5%BA%8F%E6%B8%97%E9%80%8F/" rel="tag">小程序渗透</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%9A%E5%AE%A2/" rel="tag">博客</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" rel="tag">代码审计</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/edusrc/" rel="tag">edusrc</a></li></ul>
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/04/">2024年04月</a><span class="archive-list-count">10</span></li></ul>
+      
+        <div class="catelogue catelogue-2">
+           
+          
+            <p>
+              <span>下一篇</span>
+              <a href="/2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/">某音矩阵云混剪系统V2.3.0代码审计(1)</a>
+            </p>
+          
+        </div>
+      
     </div>
   </div>
 </div>
 
 
 <script>
-  var allImgBoxs = document.querySelectorAll('.index-article--box');
-  var windowHeight = window.innerHeight;
-  var boxs = Array.from(allImgBoxs);
-  var timer = null;
-  boxs.forEach((box, idx) => {
-    if (!window.loadImageSet || !window.loadImageSet.includes(idx)) {
-      box.classList.add('img-loading');
-    } else {
-      const imgDom = box.querySelector('img');
-      imgDom.src = imgDom.dataset.cover;
-    }
-  });
+  // var定义，避免pjax重新进来造成的重复声明错误
+  var config = JSON.parse('{"enable":true,"appId":"Pf8zCXGEH1qsprnWfikVVujL-gzGzoHsz","appKey":"qOqoiUHhH1TGtLRUYURkLRQX","placeholder":"请留下你宝贵的意见吧~","meta":["nick"],"recordIP":true,"visitor":true,"enableQQ":true}')
+  new Valine({
+    el: '#vcomments',
+    appId: config.appId,
+    appKey: config.appKey,
+    placeholder: config.placeholder,
+    meta: config.meta,
+    recordIP: config.recordIP,
+    visitor: config.visitor,
+    enableQQ: config.enableQQ,
+    path: '2024/04/30/安全开发实战-2-域名反查IP/'
+  })
+</script>
 
-  function scrollFn() {
-    if (timer) {
-      return;
-    }
-    timer = setTimeout(() => {
-      loadImage();
-      timer = null;
-    }, 100)
-  }
 
-  setTimeout(() => {
-    loadImage();
-  }, 100);
-  if (!window.loadedImage) {
-    document.addEventListener('scroll', scrollFn);
-  }
+<script>
+  $(document).on('pjax:complete', function() {
+    const tocs = document.querySelector('.toc')
+    const links = tocs ? tocs.querySelectorAll('a') : []
+    links.forEach(link => {
+      link.addEventListener('click', e => {
+        const href = decodeURIComponent(e.href)
+        href.search(/#(.*)/)
+        const id = RegExp.$1
+        const target = document.querySelector('#' + id)
+        const top = target.offsetTop
+        document.documentElement.scrollTo({
+          top: top - 100,
+          behavior: 'smooth'
+        })
+        e.preventDefault()
+      })
+    })
+  })
+</script> 
 
-  function loadImage() {
-    const doc = document.documentElement;
-    const scrollTop = doc.scrollTop;
-    if (boxs.every(box => box.loadedImage)) {
-      document.removeEventListener('scroll', scrollFn);
-      window.loadedImage = 1;
-      return;
-    }
-    boxs.forEach((box, idx) => {
-      if (box.loadedImage) {
-        return;
-      }
-      if (box.getBoundingClientRect().top < windowHeight) {
-        const imgDom = box.querySelector('img');
-        imgDom.src = imgDom.dataset.cover;
-        // 图片成功加载
-        imgDom.onload = () => {
-          box.classList.remove('img-loading');
-          box.loadedImage = true;
-          if (!window.loadImageSet) {
-            window.loadImageSet = [];
-          }
-          window.loadImageSet.push(idx);
-        }
-        // 图片加载失败
-        imgDom.onerror = () => {
-          box.classList.remove('img-loading');
-          box.classList.add('img-error');
-          imgDom.src = '/imgs/404.png';
-        }
-      }
-    });
-  }
-</script> </div>
+</div>
       <div class="main-right-wrapper"><div class="main-right">
   <div class="main-right--board">
     <div class="main-right--title">
