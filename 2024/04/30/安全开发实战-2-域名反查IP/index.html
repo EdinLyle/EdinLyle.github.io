@@ -193,7 +193,7 @@
   const ipt = document.querySelector('#search-input')
   const btn = document.querySelector('#search-btn')
   const layer = document.querySelector('#search-layer')
-  const posts = JSON.parse(`[{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"免杀开发基础(1)","path":"2024/04/12/免杀开发基础-1/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"安全开发实战(2)---域名反查IP","path":"2024/04/30/安全开发实战-2-域名反查IP/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"网安开发实战(1)-Cdn","path":"2024/04/16/网安开发实战-1-Cdn/"},{"title":"某小学AK,SK泄露导致横向到云主机控制台","path":"2024/04/16/某小学AK-SK泄露导致横向到云主机控制台/"},{"title":"某音矩阵云混剪系统V2.3.0代码审计(1)","path":"2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"}]`)
+  const posts = JSON.parse(`[{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"免杀开发基础(1)","path":"2024/04/12/免杀开发基础-1/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"安全开发实战(2)---域名反查IP","path":"2024/04/30/安全开发实战-2-域名反查IP/"},{"title":"某小学AK,SK泄露导致横向到云主机控制台","path":"2024/04/16/某小学AK-SK泄露导致横向到云主机控制台/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"某音矩阵云混剪系统V2.3.0代码审计(1)","path":"2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/"},{"title":"安全开发实战(3)---存活探测与端口扫描","path":"2024/04/30/安全开发实战-3-存活探测与端口扫描/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"},{"title":"网安开发实战(1)-Cdn","path":"2024/04/16/网安开发实战-1-Cdn/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"}]`)
   ipt.addEventListener('keyup', e => {
     if (e.key === 'Enter') {
       handleSearch()
@@ -327,7 +327,7 @@
       </h5>
       <p class="main-left--subtitle">
         <span>文章数目：</span>
-        <span>10 篇</span>
+        <span>11 篇</span>
       </p>
       <p class="main-left--subtitle">
         <span>最近动态：</span>
@@ -393,9 +393,9 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> socket</span><br><span class="line">ip = <span class="built_in">str</span>(<span class="built_in">input</span>(<span class="string">&#x27;请输入IP地址：&#x27;</span>))</span><br><span class="line">ip = socket.gethostbyname(<span class="string">f&#x27;<span class="subst">&#123;ip&#125;</span>&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(ip)</span><br></pre></td></tr></table></figure>
 
 <p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
-<p><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-2-%E5%9F%9F%E5%90%8D%E5%8F%8D%E6%9F%A5IP/766d922618014086bfbd34a44eba7610.png" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301403942.png"></p>
 <h4 id="1-2-3-批量监测"><a href="#1-2-3-批量监测" class="headerlink" title="1.2.3 批量监测"></a>1.2.3 批量监测</h4><p>   可以批量进行域名批量反查ip地址,中间出现过一次问题,问题解决方案在上一篇的那个cdn遇到的是一致的,但是,这次会导致,读取域名时使用f.readlines()时会导致,读取的url中会自动增加上&#x2F;n,导致域名查询ip地址时出现错误</p>
-<p><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-2-%E5%9F%9F%E5%90%8D%E5%8F%8D%E6%9F%A5IP/3f1f2c5489644f5987ca4be109f4f393.png" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301403920.png"></p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 先判断是否有cdn后,然后有需要的话通过域名反查IP地址</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;url.txt&quot;</span>, <span class="string">&quot;r&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    <span class="keyword">for</span> url <span class="keyword">in</span> f.readlines():</span><br><span class="line">        url = url.rstrip()  <span class="comment"># 去掉换行符</span></span><br><span class="line">        ip = socket.gethostbyname(url)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;<span class="subst">&#123;url&#125;</span> : <span class="subst">&#123;ip&#125;</span>&#x27;</span>)</span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;ip.txt&quot;</span>, <span class="string">&quot;a+&quot;</span>) <span class="keyword">as</span> w:</span><br><span class="line">            w.write(<span class="string">f&#x27;<span class="subst">&#123;url&#125;</span> : <span class="subst">&#123;ip&#125;</span>&#x27;</span>+<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
@@ -404,8 +404,10 @@
 
 <p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
 <p>ip.txt</p>
-<p><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-2-%E5%9F%9F%E5%90%8D%E5%8F%8D%E6%9F%A5IP/2a6e9fbd541645b4a6905d0066de528f.png" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
-<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a><img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-2-%E5%9F%9F%E5%90%8D%E5%8F%8D%E6%9F%A5IP/9817f07d83f94ee8b20e755f26eff91e.png" alt="img"><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动">总结</h1><p>域名反查ip对于进行进一步渗透测试也是比较关键的一步,其实说更具体一点是查找真实ip地址,这里就是同写个小脚本,查询域名的ip地址,没什么含金量,主要是能够帮助我们在渗透中节省时间.</p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301404157.png"></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301404695.png"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">域名反查ip对于进行进一步渗透测试也是比较关键的一步,其实说更具体一点是查找真实ip地址,这里就是同写个小脚本,查询域名的ip地址,没什么含金量,主要是能够帮助我们在渗透中节省时间.</span><br></pre></td></tr></table></figure>
+
 
     </article>
     
@@ -431,6 +433,11 @@
       </div>
       
         <div class="catelogue catelogue-2">
+          
+            <p>
+              <span>上一篇：</span>
+              <a href="/2024/04/30/安全开发实战-3-存活探测与端口扫描/">安全开发实战(3)---存活探测与端口扫描</a>
+            </p>
            
           
             <p>

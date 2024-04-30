@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>我的技术与生活——安全开发实战(3)---存活探测与端口扫描 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="shortcut icon" href="/imgs/shortcut-icon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/css/public.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/iconfont.css" />
+  <link rel="stylesheet" href="/css/APlayer.min.css" />
+  <script src="/js/APlayer.min.js"></script>
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/jquery.pjax.min.js"></script>
+
+  <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+  <script>
+    document.title = `我的技术与生活——安全开发实战(3)---存活探测与端口扫描`
+  </script>
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<style>
+  .load {
+    width: 100%;
+    height: 100vh;
+    background-color: rgb(37, 35, 40);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 9999;
+  }
+  .load-circle {
+    width: 80px;
+    height: 80px;
+    border: 8px solid orange;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: rotate 1s linear infinite;
+    filter: drop-shadow(0 0 3px orange);
+  }
+  .load-circle-inner {
+    width: 40px;
+    height: 40px;
+    border: 8px solid orange;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: rotate-reverse .5s linear infinite;
+  }
+  .load-text {
+    margin-top: 20px;
+    font-size: 24px;
+    color: orange;
+    display: flex;
+  }
+  .load-text span {
+    margin: 0 5px;
+    text-shadow: 5px 5px 5px orange;
+    animation: move 1s linear infinite;
+  }
+  .load-text span:nth-child(1) {
+    animation-delay: -0.6s;
+  }
+  .load-text span:nth-child(2) {
+    animation-delay: -0.5s;
+  }
+  .load-text span:nth-child(3) {
+    animation-delay: -0.4s;
+  }
+  .load-text span:nth-child(4) {
+    animation-delay: -0.3s;
+  }
+  .load-text span:nth-child(5) {
+    animation-delay: -0.2s;
+  }
+  .load-text span:nth-child(6) {
+    animation-delay: -0.1s;
+  }
+  @keyframes rotate {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes rotate-reverse {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(-360deg); }
+  }
+  @keyframes move {
+    0% { transform: translateY(0%) rotate(0) scale(1); }
+    20% { transform: translateY(20%) rotate(10deg) scale(1.2); }
+    80% { transform: translateY(-10%) rotate(-20deg) scale(.8);}
+    100% { transform: translateY(0) rotate(0) scale(1); }
+  }
+
+  .progress {
+    position: fixed;
+    left: 0; top: 0;
+    width: 0;
+    height: 3px;
+    background-color: green;
+    transition: all cubic-bezier(0.215, 0.610, 0.355, 1) .1s;
+    z-index: 9999;
+  }
+
+  .to-up {
+    animation: toUp .5s 1;
+  }
+  .gray {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 9999;
+    display: none;
+    pointer-events: none;
+    background-color: #000;
+    mix-blend-mode: color;
+  }
+  @keyframes toUp {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0) ; opacity: 1; }
+  }
+</style>
+<body>
+  <div id="load" class="load">
+    <div class="load-circle">
+      <div class="load-circle-inner"></div>
+    </div>
+    <p class="load-text">
+      <span>L</span>
+      <span>O</span>
+      <span>A</span>
+      <span>D</span>
+      <span>I</span>
+      <span>N</span>
+      <span>G</span>
+    </p>
+  </div>
+  <div id="container" class="container w-100 vh-100" style="display: none;">
+    <header class="header">
+  <div class="header-wrapper">
+    <div class="header-left">
+      <div class="header-search">
+        <input id="search-input" type="text" class="header-search--input" placeholder="请输入要检索的文章标题" />
+        <span id="search-btn" class="header-search--icon"><i class="iconfont icon-sousuo"></i></span>
+      </div>
+      <div id="search-layer" class="header-search--layer hidden">
+        <p class="title">
+          <span>以下是搜索内容：</span>
+          <span id="close-layer-btn">关闭</span>
+        </p>
+        <ul>
+        </ul>
+      </div>
+    </div>
+    <div class="header-right">
+      <ul class="header-menu">
+        <li>
+          <a href="http://example.com/">
+            <i class="header-menu--icon iconfont icon-shouye"></i>
+            <span class="header-menu--span">首页</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/log">
+            <i class="header-menu--icon iconfont icon-rizhi"></i>
+            <span class="header-menu--span">日志</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/link">
+            <i class="header-menu--icon iconfont icon-youqinglianjie"></i>
+            <span class="header-menu--span">友情链接</span>
+          </a>
+        </li>
+        <li>
+          <a href="http://example.com/about">
+            <i class="header-menu--icon iconfont icon-guanyuwomen"></i>
+            <span class="header-menu--span">关于我</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<script>
+  const ipt = document.querySelector('#search-input')
+  const btn = document.querySelector('#search-btn')
+  const layer = document.querySelector('#search-layer')
+  const posts = JSON.parse(`[{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"免杀开发基础(1)","path":"2024/04/12/免杀开发基础-1/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"安全开发实战(2)---域名反查IP","path":"2024/04/30/安全开发实战-2-域名反查IP/"},{"title":"某小学AK,SK泄露导致横向到云主机控制台","path":"2024/04/16/某小学AK-SK泄露导致横向到云主机控制台/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"某音矩阵云混剪系统V2.3.0代码审计(1)","path":"2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/"},{"title":"安全开发实战(3)---存活探测与端口扫描","path":"2024/04/30/安全开发实战-3-存活探测与端口扫描/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"},{"title":"网安开发实战(1)-Cdn","path":"2024/04/16/网安开发实战-1-Cdn/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"}]`)
+  ipt.addEventListener('keyup', e => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
+  })
+  btn.addEventListener('click', () => {
+    handleSearch()
+  })
+
+  document.querySelector('#close-layer-btn').addEventListener('click', () => {
+    layer.classList.toggle('hidden')
+  })
+
+  function handleSearch() {
+    if (ipt.value.trim() === '') {
+      return
+    }
+    let html = ''
+    const targetPosts = posts.filter(post => post.title.includes(ipt.value))
+    targetPosts.forEach(post => {
+      html += `
+        <li>
+          <div>
+            <a href="/${post.path}">${post.title.replace(new RegExp(ipt.value), `<span>${ipt.value}</span>`)}</a>
+          </div>
+          <img src="${post.cover || '/imgs/default-cover.webp' }" />
+        </li>
+      `
+    })
+    if (html.trim () === '') {
+      html += '<p class="empty">没有搜索到内容</p>'
+    }
+    layer.querySelector('ul').innerHTML = html
+    layer.classList.remove('hidden')
+  }
+</script> 
+    <section id="main" class="main">
+      <div class="main-left-wrapper">
+<div class="main-left">
+  <div class="main-left--block">
+    <div class="main-left--info">
+      <img src="/imgs/avatar.jpg"" class="main-left--avatar" />
+      <div class="main-left--intro">
+        <p class="main-left--name">小鱼</p>
+        <div class="main-left--tags">
+          <span class="main-left--tag">渗透测试</span>
+          <span class="main-left--tag">善于观察</span>
+        </div>
+      </div>
+    </div>
+  
+    <div>
+      <div class="main-left--motto">
+        <p>“花有重开日，人无再少年”</p>
+        <p>“一个简单普通的男孩”</p>
+      </div>
+      <div class="main-left--github">
+        <span class="line"></span>
+        <a target="_blank" rel="noopener" href="https://gitee.com/ccshyi"><i class="logo iconfont icon-github-fill"></i></a>
+        <span class="line"></span>
+      </div>
+      <div class="main-left--statics">
+        <a href="/categories">
+          <div>
+            <span>6</span>
+            <span>分类</span>
+          </div>
+        </a>
+        <a href="/tags">
+          <div>
+            <span>6</span>
+            <span>标签</span>
+          </div>
+        </a>
+        <a href="/archives">
+          <div>
+            <span>1 </span>
+            <span>归档</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-left--block">
+    <ul class="main-left--menu">
+      
+        <li>
+          <a href="/">
+            <span class="header-menu--span">小站首页</span>
+            <i class="header-menu--icon iconfont icon-shouye"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/log">
+            <span class="header-menu--span">个人日志</span>
+            <i class="header-menu--icon iconfont icon-rizhi"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/link">
+            <span class="header-menu--span">友情链接</span>
+            <i class="header-menu--icon iconfont icon-youqinglianjie"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/about">
+            <span class="header-menu--span">关于自己</span>
+            <i class="header-menu--icon iconfont icon-guanyuwomen"></i>
+          </a>
+        </li>
+      
+        <li>
+          <a href="/tools">
+            <span class="header-menu--span">我的工具</span>
+            <i class="header-menu--icon iconfont icon-gongju"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="main-left--block">
+    <div class="main-left--site">
+      <h5 class="main-left--title">
+        <span>站点信息</span>
+        <i class="iconfont icon-zhandian"></i>
+      </h5>
+      <p class="main-left--subtitle">
+        <span>文章数目：</span>
+        <span>11 篇</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>最近动态：</span>
+        <span>今天</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>上线时间：</span>
+        <span>29天</span>
+      </p>
+      <p class="main-left--subtitle">
+        <span>当前版本：</span>
+        <span>v1.0.2</span>
+      </p>
+    </div>
+  </div>
+</div></div>
+      <div id="main-container" class="main-container">
+
+
+  <link rel="stylesheet" href="/css/partial/article.css" />
+
+<div class="article-container">
+  <div class="article">
+    <h1 class="article-title">安全开发实战(3)---存活探测与端口扫描</h1>
+    <div class="article-info">
+      <div class="article-info--item">
+        <div class="article-info--info">
+          
+          <div class="article-info--categories">
+            <span>分类：</span>
+            <a class="category-link" href="/categories/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91/">安全开发</a>
+          </div>
+          
+          
+          <div class="article-info--tags">
+            <span>标签：</span>
+            <a class="tag-link" href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" rel="tag">渗透测试</a>
+          </div>
+          
+          <p class="article-info--date">日期：2024-04-30 14:09:23</p>
+        </div>
+        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
+      </div>
+    </div>
+    <article class="article-content markdown-body">
+      <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><blockquote>
+<p>​    本篇主要是对上一篇,通过域名反差ip后,我们需要通过对主机进行存活监测以及存活的端口进行探测.</p>
+</blockquote>
+<h2 id="存活探测"><a href="#存活探测" class="headerlink" title="存活探测"></a>存活探测</h2><blockquote>
+<p>​    存活探测的作用是确定网络中哪些主机是活动的，即哪些主机正在运行并且可以响应网络请求。通过发送特定类型的数据包（如ICMP回显请求）来检测主机是否在线。</p>
+<p>​    在渗透测试中，存活探测可以帮助我们确定网络范围，并识别可能存在的目标。这是渗透测试的第一步，我们需要了解哪些主机可以被攻击。</p>
+</blockquote>
+<h2 id="端口扫描"><a href="#端口扫描" class="headerlink" title="端口扫描"></a>端口扫描</h2><blockquote>
+<p>​    端口扫描的作用是确定主机上哪些网络端口是开放的，即哪些端口正在监听传入的网络连接。通过向目标主机发送网络数据包，并根据主机的响应来确定哪些端口是开放的，以及在返回该端口上运行的服务,帮助我们有针对性的使用漏洞来进行进一步的利用。</p>
+<p>​    在渗透测试中，端口扫描用于识别目标主机上可能存在的漏洞或弱点。通过确定哪些端口是开放的，我们可以进一步分析目标主机上运行的服务和应用程序，从而发现可能的攻击路径和入口点。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">下面的两种方式,各有各的好处,但是相对来说,第二中方式的探测速度更快一点</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="方式一"><a href="#方式一" class="headerlink" title="方式一:"></a>方式一:</h2><h3 id="1-3-1-One"><a href="#1-3-1-One" class="headerlink" title="1.3.1 One"></a>1.3.1 One</h3><p>​    socket中的connect()方法连接一但端口不开放,直接就会报错结束监测不利于后续的多个端口的监测</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> socket</span><br><span class="line">server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line"><span class="comment"># connect方式: ip地址或者端口不存在的话会报错,连接尝试失败,ip和端口开放返回None</span></span><br><span class="line"><span class="comment"># 连接方式 ip/域名,端口号</span></span><br><span class="line">result = server.connect((<span class="string">&#x27;127.0.0.1&#x27;</span>, <span class="number">99</span>))</span><br><span class="line"><span class="built_in">print</span>(result)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301413732.png"></p>
+<h3 id="1-3-2-Two"><a href="#1-3-2-Two" class="headerlink" title="1.3.2 Two"></a>1.3.2 Two</h3><blockquote>
+<p>​    这里通过使用另一种socket的方法,并且进行了对比,下面的输出图片中能明显看出,开放端口会输出0,不开放的端口会默认返回一个随机的相同的错误码,直到那个端口开放,后又会换一个错误码输出.</p>
+</blockquote>
+<p>​           当然,在渗透测试中,我们不需要考虑未开放的端口,因为意义不大</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 端口扫描(扫描真实IP或域名)</span></span><br><span class="line"><span class="comment"># 方式1: 写原生socket来完成tcp,udp扫描</span></span><br><span class="line"><span class="comment"># connect_ex: ip地址或者端口不存在的话会返回一个错误码,ip和端口开放返回0,connect_ex的效率比上面的快两倍左右</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line">ports = [<span class="number">21</span>, <span class="number">22</span>, <span class="number">80</span>, <span class="number">135</span>, <span class="number">443</span>, <span class="number">445</span>, <span class="number">1433</span>, <span class="number">1521</span>, <span class="number">3306</span>, <span class="number">3389</span>, <span class="number">7001</span>, <span class="number">8000</span>]</span><br><span class="line">server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">url = <span class="built_in">str</span>(<span class="built_in">input</span>(<span class="string">&quot;请输入要监测的域名或IP地址:&quot;</span>))</span><br><span class="line"><span class="keyword">for</span> port <span class="keyword">in</span> ports:</span><br><span class="line">    result = server.connect_ex((url, port))</span><br><span class="line">    <span class="keyword">if</span> result == <span class="number">0</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;<span class="subst">&#123;port&#125;</span>端口是开放的&#x27;</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&#x27;<span class="subst">&#123;port&#125;</span>端口是关闭的&#x27;</span>)</span><br><span class="line">    <span class="comment"># print(result) # 这个是用来输出当端口为开放时,输出的错误码的</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301413722.png"></p>
+<h3 id="1-3-3-批量监测"><a href="#1-3-3-批量监测" class="headerlink" title="1.3.3 批量监测"></a>1.3.3 批量监测</h3><blockquote>
+<p>​    渗透中不开放的端口是没有利用价值的,但是要写还是写全吧,当然不使用的话可以直接注释掉,下面是做示例为了提升速度,所以只监测了三个端口,当然可以自行在列表中添加一些常用的端口.</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># ports = [21, 22, 80, 135, 443, 445, 1433, 1521, 3306, 3389, 7001, 8000]</span></span><br><span class="line">ports = [<span class="number">22</span>, <span class="number">22</span>, <span class="number">80</span>]</span><br><span class="line">server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;ip.txt&#x27;</span>, <span class="string">&#x27;r&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    <span class="keyword">for</span> ip <span class="keyword">in</span> f.readlines():</span><br><span class="line">        <span class="keyword">for</span> port <span class="keyword">in</span> ports:</span><br><span class="line">            ip = ip.rstrip()  <span class="comment"># 去掉换行符</span></span><br><span class="line">            result = server.connect_ex((ip, port))</span><br><span class="line">            <span class="keyword">if</span> result == <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;端口开放.txt&quot;</span>, <span class="string">&quot;a+&quot;</span>) <span class="keyword">as</span> w:</span><br><span class="line">                    w.write(<span class="string">f&#x27;<span class="subst">&#123;ip&#125;</span>:<span class="subst">&#123;port&#125;</span>&#x27;</span>+<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&#x27;<span class="subst">&#123;ip&#125;</span>:<span class="subst">&#123;port&#125;</span>端口是开放的&#x27;</span>)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;端口未开放.txt&quot;</span>, <span class="string">&quot;a+&quot;</span>) <span class="keyword">as</span> w:</span><br><span class="line">                    w.write(<span class="string">f&#x27;<span class="subst">&#123;ip&#125;</span>:<span class="subst">&#123;port&#125;</span>&#x27;</span> + <span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">f&#x27;<span class="subst">&#123;ip&#125;</span>:的<span class="subst">&#123;port&#125;</span>的端口是关闭的&#x27;</span>)</span><br><span class="line">            <span class="comment"># print(result)</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301413717.png"></p>
+<p>ip.txt</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">36.155</span><span class="number">.132</span><span class="number">.3</span></span><br><span class="line"><span class="number">202.89</span><span class="number">.233</span><span class="number">.100</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p> 端口开放.txt</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">36.155</span><span class="number">.132</span><span class="number">.3</span>:<span class="number">80</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<p> 端口不开放.txt</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">36.155</span><span class="number">.132</span><span class="number">.3</span>:<span class="number">22</span></span><br><span class="line"><span class="number">36.155</span><span class="number">.132</span><span class="number">.3</span>:<span class="number">22</span></span><br><span class="line"><span class="number">202.89</span><span class="number">.233</span><span class="number">.100</span>:<span class="number">22</span></span><br><span class="line"><span class="number">202.89</span><span class="number">.233</span><span class="number">.100</span>:<span class="number">22</span></span><br><span class="line"><span class="number">202.89</span><span class="number">.233</span><span class="number">.100</span>:<span class="number">80</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="点击并拖拽以移动"></p>
+<h2 id="方式二"><a href="#方式二" class="headerlink" title="方式二:"></a>方式二:</h2><h3 id="1-3-1-One-1"><a href="#1-3-1-One-1" class="headerlink" title="1.3.1 One"></a>1.3.1 One</h3><blockquote>
+<p>​    本方式是通过使用python的第三方库,使用python-nmap来管理下载的nmap来实现,首先先下载namp,当然对于使用过的namp的,直接将下载namp的安装路径,直接放入到环境变量path中即可</p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://nmap.org/download#windows">Download the Free Nmap Security Scanner for Linux&#x2F;Mac&#x2F;Windows<img src="/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-3-%E5%AD%98%E6%B4%BB%E6%8E%A2%E6%B5%8B%E4%B8%8E%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/icon-default.png" alt="img">https://nmap.org/download#windows</a></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301413496.png"></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301414289.png"></p>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301414816.png"></p>
+<h3 id="1-3-2-Two-1"><a href="#1-3-2-Two-1" class="headerlink" title="1.3.2 Two"></a>1.3.2 Two</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方式2:调用第三方库nmap,masscan等进行扫描</span></span><br><span class="line"><span class="comment"># 下载nmap工具,并将nmap的路径配置到环境变量中</span></span><br><span class="line"><span class="comment"># 需要先安装nmap工具,并且将nmap的路径(就是安装的路径)配置到环境变量path中</span></span><br><span class="line"><span class="comment"># 就是在环境中安装 python-nmap 库  ,用cmd安装的话使用 pip3 install python-nmap 命令</span></span><br><span class="line"><span class="keyword">import</span> nmap</span><br><span class="line">nm = nmap.PortScanner()</span><br><span class="line"><span class="comment"># host代表ip地址, 后面的是nmap的扫描命令</span></span><br><span class="line">nm.scan(hosts=<span class="string">&#x27;192.168.xx.x&#x27;</span>, arguments=<span class="string">&#x27;-n -sP -PE&#x27;</span>)</span><br><span class="line"><span class="comment"># 探测整个ip段</span></span><br><span class="line"><span class="comment"># nm.scan(hosts=&#x27;192.168.xx.x/24&#x27;, arguments=&#x27;-n -sP -PE&#x27;)</span></span><br><span class="line">up_hosts = nm.all_hosts()  <span class="comment"># 获取存活主机列表</span></span><br><span class="line"><span class="built_in">print</span>(up_hosts)</span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>​     为了更好的演示,这里我扫描了我自己连接wiff下的整个网段的ip地址,如图所示会将探测的存活ip地址的列表返回回来</p>
+</blockquote>
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301414010.png"></p>
+<h3 id="1-3-3-Three"><a href="#1-3-3-Three" class="headerlink" title="1.3.3 Three"></a>1.3.3 Three</h3><blockquote>
+<p>​    既然进行了主机存活监测,下一步就是端口探测了,当然也可以进行调用nmap进行扫描,如下图所示,能够看出,扫描的主机,以及命令,扫描的端口范围,端口的协议,端口开放情况,那么接下来的操作就是通过批量导入ip地址,并将开放的端口和协议从下面的一堆信息中提取出来就结束了</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> nmap</span><br><span class="line">nm = nmap.PortScanner()</span><br><span class="line">nm.scan(hosts=<span class="string">&#x27;192.168.xx.x&#x27;</span>, arguments=<span class="string">&#x27;-n -sP -PE&#x27;</span>)</span><br><span class="line"><span class="comment"># 探测整个ip段</span></span><br><span class="line"><span class="comment"># nm.scan(hosts=&#x27;192.168.xx.x/24&#x27;, arguments=&#x27;-n -sP -PE&#x27;)</span></span><br><span class="line">up_hosts = nm.all_hosts()  <span class="comment"># 获取存活主机列表</span></span><br><span class="line"><span class="built_in">print</span>(up_hosts)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 探测端口存活</span></span><br><span class="line"><span class="comment"># 存活ip,探测端口范围</span></span><br><span class="line">state = nm.scan(<span class="string">&#x27;192.168.xx.x&#x27;</span>, <span class="string">&#x27;22-443&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(state)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301414843.png"></p>
+<h3 id="1-3-4-扫描ip地址-提取出开放端口和协议"><a href="#1-3-4-扫描ip地址-提取出开放端口和协议" class="headerlink" title="1.3.4 扫描ip地址,提取出开放端口和协议"></a>1.3.4 扫描ip地址,提取出开放端口和协议</h3><blockquote>
+<p>​    这里是将监测的存活的主机,以及存活主机的端口一起进行监测,将监测的结果(存活的主机,存活主机的端口以及对应的协议打印出来),当然这里我只进行了端口和协议的输出,因为渗透中,除非使用nmap进行漏洞扫描,不然最多到这一步就可以了.</p>
+</blockquote>
+<p>​    这里有个知识点,open代表端口开放,那么filtered代表什么,这里我也是进行了查询后知道了,这里使用110端口做示例,帮助自己有个更好的了解:</p>
+<p>​    在网络安全领域，特别是在端口扫描或者防火墙日志中，”端口号： 110 状态： filtered” 这样的表述通常涉及到网络过滤和端口的状态。具体解释：</p>
+<ul>
+<li><strong>端口号： 110</strong> - 端口号是用于区分计算机网络上不同服务的一个数字标识符。端口号110通常被指派给POP3（邮局协议第三版）服务，这是一种用于接收电子邮件的协议。</li>
+<li><strong>状态： filtered</strong> - 这个状态表示该端口目前处于被过滤的状态。在网络术语中，“filtered”意味着某些网络流量或数据包被防火墙、安全设备或网络策略所阻止，无法到达目标端口。这可能是由于安全规则或策略的结果，目的是防止未经授权的访问或保护内部网络不受外部威胁。</li>
+</ul>
+<p>当进行端口扫描时，如果某个端口返回的状态是“filtered”，这可能意味着：</p>
+<ul>
+<li>端口被防火墙或安全设备保护，并且没有回应扫描器发送的数据包。</li>
+<li>端口上可能运行的服务无法从外部网络访问，因为流量被过滤了。</li>
+<li>这种状态也可能表示网络设备本身存在安全机制，例如入侵检测系统(IDS)或入侵防御系统(IPS)，它们会识别并阻止潜在的恶意流量。</li>
+</ul>
+<p>​    因此，”端口号： 110 状态： filtered” 通常表明POP3服务的端口当前不能被外部访问，并且任何尝试连接该端口的请求都被网络的安全设施所拦截。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> nmap</span><br><span class="line"></span><br><span class="line">nm = nmap.PortScanner()</span><br><span class="line"><span class="comment"># 指定主机,后面指定的协议和nmap的命令一致</span></span><br><span class="line">nm.scan(hosts=<span class="string">&#x27;192.168.xx.x&#x27;</span>, arguments=<span class="string">&#x27;-p 22-443 -sV&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> host <span class="keyword">in</span> nm.all_hosts():</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;主机 : %s &#x27;</span> % host)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;状态 : %s&#x27;</span> % nm[host].state())  <span class="comment"># up 表示在线,down表示不在线</span></span><br><span class="line">    <span class="keyword">for</span> proto <span class="keyword">in</span> nm[host].all_protocols():  <span class="comment"># nm[host].all_protocols() 主机存活的所有协议</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;协议 : %s&#x27;</span> % proto)</span><br><span class="line">        lport = nm[host][proto].keys()</span><br><span class="line">        <span class="keyword">for</span> port <span class="keyword">in</span> lport:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;端口号 : %s\t状态 : %s&#x27;</span> % (port, nm[host][proto][port][<span class="string">&#x27;state&#x27;</span>]))</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="https://xiaoyunxi.oss-cn-zhangjiakou.aliyuncs.com/202404301414191.png"></p>
+<h3 id="1-3-5-批量扫描-最终完成版"><a href="#1-3-5-批量扫描-最终完成版" class="headerlink" title="1.3.5 批量扫描(最终完成版)"></a>1.3.5 批量扫描(最终完成版)</h3><blockquote>
+<p>​    这里我也优化了之前,到最后写入的时候打开文件,从刚开始就打开写入文件以及读的文件,使整个文件不容易出错,代码整体没有什么难度,主要是考虑写入时的位置,以及怎么循环每个主机和端口的判断,同时使用库中自带的方法</p>
+</blockquote>
+<blockquote>
+<p>​    整体就是通过监测出存活的ip,然后对开放的端口进行监测,然后打印到结果的文件夹,以及输出到控制台中</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> nmap</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;ip.txt&#x27;</span>, <span class="string">&#x27;r&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;result.txt&quot;</span>, <span class="string">&quot;a+&quot;</span>) <span class="keyword">as</span> w:</span><br><span class="line">        <span class="keyword">for</span> ip <span class="keyword">in</span> f.readlines():</span><br><span class="line">            ip = ip.rstrip()</span><br><span class="line">            nm = nmap.PortScanner()</span><br><span class="line">            nm.scan(hosts=ip, arguments=<span class="string">&#x27;-p 22-443 -sV&#x27;</span>)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> host <span class="keyword">in</span> nm.all_hosts():</span><br><span class="line">                w.write(<span class="string">f&#x27;主机 : <span class="subst">&#123;host&#125;</span>\n&#x27;</span>)</span><br><span class="line">                w.write(<span class="string">f&#x27;状态 : <span class="subst">&#123;nm[host].state()&#125;</span>\n&#x27;</span>)</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">&#x27;主机 : %s &#x27;</span> % host)</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">&#x27;状态 : %s&#x27;</span> % nm[host].state())  <span class="comment"># up 表示在线,down表示不在线</span></span><br><span class="line">                <span class="keyword">for</span> proto <span class="keyword">in</span> nm[host].all_protocols():</span><br><span class="line">                    <span class="built_in">print</span>(<span class="string">&#x27;协议 : %s&#x27;</span> % proto)</span><br><span class="line">                    w.write(<span class="string">f&#x27;协议 : <span class="subst">&#123;proto&#125;</span>\n&#x27;</span>)</span><br><span class="line">                    lport = nm[host][proto].keys()</span><br><span class="line">                    <span class="keyword">for</span> port <span class="keyword">in</span> lport:</span><br><span class="line">                        state_result = nm[host][proto][port][<span class="string">&#x27;state&#x27;</span>]</span><br><span class="line">                        w.write(<span class="string">f&#x27;端口号 : <span class="subst">&#123;port&#125;</span>\t状态 : <span class="subst">&#123;state_result&#125;</span>\n&#x27;</span>)</span><br><span class="line">                        <span class="built_in">print</span>(<span class="string">&#x27;端口号 : %s\t状态 : %s&#x27;</span> % (port, state_result))</span><br><span class="line"></span><br><span class="line">            w.write(<span class="string">&#x27;\n&#x27;</span>)  <span class="comment"># 添加一个换行符,为了分开主机,方便查看</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>ip.txt</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">192.</span>xxx.xx<span class="number">.1</span></span><br><span class="line"><span class="number">192.</span>xxx.xx<span class="number">.4</span></span><br><span class="line"><span class="number">192.</span>xxx.xx<span class="number">.6</span></span><br><span class="line"><span class="number">192.</span>xxx.xx<span class="number">.5</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>result.txt</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">主机 : <span class="number">192.</span>xxx.xx<span class="number">.1</span></span><br><span class="line">状态 : up</span><br><span class="line">协议 : tcp</span><br><span class="line">端口号 : <span class="number">22</span>	状态 : filtered</span><br><span class="line">端口号 : <span class="number">23</span>	状态 : filtered</span><br><span class="line">端口号 : <span class="number">26</span>	状态 : filtered</span><br><span class="line">端口号 : <span class="number">53</span>	状态 : <span class="built_in">open</span></span><br><span class="line">端口号 : <span class="number">80</span>	状态 : <span class="built_in">open</span></span><br><span class="line"></span><br><span class="line">主机 : <span class="number">192.</span>xxx.xx<span class="number">.4</span></span><br><span class="line">状态 : up</span><br><span class="line">协议 : tcp</span><br><span class="line">端口号 : <span class="number">25</span>	状态 : filtered</span><br><span class="line">端口号 : <span class="number">110</span>	状态 : filtered</span><br><span class="line">端口号 : <span class="number">135</span>	状态 : <span class="built_in">open</span></span><br><span class="line">端口号 : <span class="number">137</span>	状态 : filtered</span><br><span class="line">端口号 : <span class="number">139</span>	状态 : <span class="built_in">open</span></span><br><span class="line">端口号 : <span class="number">329</span>	状态 : filtered</span><br><span class="line"></span><br><span class="line">主机 : <span class="number">192.</span>xxx.xx<span class="number">.6</span></span><br><span class="line">状态 : up</span><br><span class="line"></span><br><span class="line">主机 : <span class="number">192.</span>xxx.xx<span class="number">.5</span></span><br><span class="line">状态 : up</span><br><span class="line">协议 : tcp</span><br><span class="line">端口号 : <span class="number">135</span>	状态 : <span class="built_in">open</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><blockquote>
+<p>​    本篇主要是对上一篇反查ip后,对整个ip段或是反查的ip进行存活的端口监测,确定目标主机开放的端口以及对应的服务,通过两种不同的方式进行编写,两种方式各有各的好处吧. </p>
+</blockquote>
+
+    </article>
+    
+    <div class="read-nums">
+      <!-- id 将作为查询条件 -->
+      <span id="2024/04/30/安全开发实战-3-存活探测与端口扫描/" class="leancloud_visitors" data-flag-title="Your Article Title">
+        <em class="post-meta-item-text">浏览量</em>
+        <i class="leancloud-visitors-count"></i>
+      </span>
+    </div>
+    <div class="comments-intro">
+      <h2>评论区</h2>
+      <p>欢迎你留下宝贵的意见，昵称输入QQ号会显示QQ头像哦~</p>
+    </div>
+    <div id="vcomments" class="vcomments"></div>
+    
+  </div>
+  <div class="article-catelogue">
+    <div class="article-catelogue--wrapper">
+      <div class="catelogue catelogue-1">
+        <h3>目录</h3>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%98%E6%B4%BB%E6%8E%A2%E6%B5%8B"><span class="toc-number">1.1.</span> <span class="toc-text">存活探测</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F"><span class="toc-number">1.2.</span> <span class="toc-text">端口扫描</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%B8%80"><span class="toc-number">1.3.</span> <span class="toc-text">方式一:</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-1-One"><span class="toc-number">1.3.1.</span> <span class="toc-text">1.3.1 One</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-2-Two"><span class="toc-number">1.3.2.</span> <span class="toc-text">1.3.2 Two</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-3-%E6%89%B9%E9%87%8F%E7%9B%91%E6%B5%8B"><span class="toc-number">1.3.3.</span> <span class="toc-text">1.3.3 批量监测</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E5%BC%8F%E4%BA%8C"><span class="toc-number">1.4.</span> <span class="toc-text">方式二:</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-1-One-1"><span class="toc-number">1.4.1.</span> <span class="toc-text">1.3.1 One</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-2-Two-1"><span class="toc-number">1.4.2.</span> <span class="toc-text">1.3.2 Two</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-3-Three"><span class="toc-number">1.4.3.</span> <span class="toc-text">1.3.3 Three</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-4-%E6%89%AB%E6%8F%8Fip%E5%9C%B0%E5%9D%80-%E6%8F%90%E5%8F%96%E5%87%BA%E5%BC%80%E6%94%BE%E7%AB%AF%E5%8F%A3%E5%92%8C%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.4.4.</span> <span class="toc-text">1.3.4 扫描ip地址,提取出开放端口和协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-5-%E6%89%B9%E9%87%8F%E6%89%AB%E6%8F%8F-%E6%9C%80%E7%BB%88%E5%AE%8C%E6%88%90%E7%89%88"><span class="toc-number">1.4.5.</span> <span class="toc-text">1.3.5 批量扫描(最终完成版)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">2.</span> <span class="toc-text">总结</span></a></li></ol>
+      </div>
+      
+        <div class="catelogue catelogue-2">
+           
+          
+            <p>
+              <span>下一篇</span>
+              <a href="/2024/04/30/安全开发实战-2-域名反查IP/">安全开发实战(2)---域名反查IP</a>
+            </p>
+          
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // var定义，避免pjax重新进来造成的重复声明错误
+  var config = JSON.parse('{"enable":true,"appId":"Pf8zCXGEH1qsprnWfikVVujL-gzGzoHsz","appKey":"qOqoiUHhH1TGtLRUYURkLRQX","placeholder":"请留下你宝贵的意见吧~","meta":["nick"],"recordIP":true,"visitor":true,"enableQQ":true}')
+  new Valine({
+    el: '#vcomments',
+    appId: config.appId,
+    appKey: config.appKey,
+    placeholder: config.placeholder,
+    meta: config.meta,
+    recordIP: config.recordIP,
+    visitor: config.visitor,
+    enableQQ: config.enableQQ,
+    path: '2024/04/30/安全开发实战-3-存活探测与端口扫描/'
+  })
+</script>
+
+
+<script>
+  $(document).on('pjax:complete', function() {
+    const tocs = document.querySelector('.toc')
+    const links = tocs ? tocs.querySelectorAll('a') : []
+    links.forEach(link => {
+      link.addEventListener('click', e => {
+        const href = decodeURIComponent(e.href)
+        href.search(/#(.*)/)
+        const id = RegExp.$1
+        const target = document.querySelector('#' + id)
+        const top = target.offsetTop
+        document.documentElement.scrollTo({
+          top: top - 100,
+          behavior: 'smooth'
+        })
+        e.preventDefault()
+      })
+    })
+  })
+</script> 
+
+</div>
+      <div class="main-right-wrapper"><div class="main-right">
+  <div class="main-right--board">
+    <div class="main-right--title">
+      <h5>公告栏</h5>
+      <i class="iconfont icon-gonggao"></i>
+    </div>
+    <div class="main-right--content">
+      Hello~大噶好。唔系小鱼，欢迎你们来到我的博客小站，希望能在这里收获到有用的东西哦！ 
+    </div>
+  </div>
+
+  <div id="aplayer" class="main-right--music"></div>
+
+  <div class="operate-items">
+    <div class="operate-item backtop">
+      <i class="iconfont icon-huidaodingbu"></i>
+      <span>回到顶部</span>
+    </div>
+    
+    <div class="operate-item turn-comment hidden">
+      <i class="iconfont icon-pinglun"></i>
+      <span>查看评论</span>
+    </div>
+    
+  </div>
+
+  <div class="main-right--site">
+    <div class="main-right--power">
+      <p>Power By <a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/">Hexo</a>.</p>
+      <p>Theme：<a target="_blank" rel="noopener" href="https://github.com/Aizener/hexo-theme-cola">Cola.</a></p>
+    </div>
+    <p class="main-right--refer"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/#/Integrated/index">暂无</a> </p>
+  </div>
+</div>
+
+<script>
+  function setOperateItem () {
+    const reg = /\d{4}\/\d{2}\/\d{2}\/.+/
+    const path = location.pathname
+    const operateDom = document.querySelector('.main-right .operate-items')
+    const commentDom = document.querySelector('.turn-comment')
+    const cateloguDom = document.querySelector('.article-catelogue > .article-catelogue--wrapper');
+
+    if (commentDom) {
+      if (reg.test(path) || path.match(/\/log\/.+/)) {
+        commentDom.classList.remove('hidden')
+        const newDom = operateDom.cloneNode(true);
+        const _backtopDom = newDom.querySelector('.backtop');
+        const _commentDom = newDom.querySelector('.turn-comment');
+        _backtopDom.addEventListener('click', () => backTopEvent());
+        _commentDom.addEventListener('click', () => commentDomEvent());
+        cateloguDom.appendChild(newDom);
+      } else {
+        commentDom.classList.add('hidden')
+      }
+    }
+  }
+
+  setOperateItem()
+  const musics = JSON.parse(`[{"name":"安河桥","artist":"宋冬野","url":"http://ting6.yymp3.net:82/new25/songdongye/11.mp3","cover":"https://img2.baidu.com/it/u=1260056724,1076343118&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"},{"name":"卡布达","artist":"暂无","url":"music/kabuda.mp3","cover":"https://img2.baidu.com/it/u=705831265,2862720033&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500"}]`)
+  const ap = new APlayer({
+    container: document.querySelector('#aplayer'),
+    audio: musics,
+  })
+
+  $(document).on('pjax:complete', function() {
+    setOperateItem()
+  })
+
+  document.querySelector('.backtop').addEventListener('click', () => {
+    backTopEvent();
+  })
+  const dom = document.querySelector('.turn-comment')
+  dom && dom.addEventListener('click', () => {
+    commentDomEvent();
+  })
+
+  function backTopEvent() {
+    document.documentElement.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+
+  function commentDomEvent() {
+    const commentDom = document.querySelector('.comments-intro')
+    if (!commentDom) return
+    const top = commentDom.offsetTop, height = commentDom.offsetHeight
+    document.documentElement.scrollTo({
+      top: top - 2 * height,
+      behavior: 'smooth'
+    })
+  }
+</script></div>
+    </section>
+  </div>
+  <div id="progress" class="progress"></div>
+  <div id="gray" class="gray"></div>
+
+  <script>
+    function initScroll () {
+      document.addEventListener('scroll', () => {
+        const doc = document.documentElement
+        const scrollTop = doc.scrollTop
+        const pageHeight = doc.offsetHeight
+        const clientHeight = doc.clientHeight
+        const ratio = scrollTop / (pageHeight - clientHeight)
+        const progress = document.querySelector('#progress')
+        const avatarImg = document.querySelector('.main-left--avatar')
+        progress.style.width = (100 * ratio) + '%'
+        avatarImg.style.transform = `rotate(${360 * ratio}deg)`
+      })
+    }
+
+    const rootPath = "/"
+
+    const checkAndSetArticlePageLayout = () => {
+      const path = location.pathname.replace(rootPath, '');
+      if (
+        /^\/?\d{4}\/\d{2}\/\d{2}\/.*/.test(path) ||
+        /^log\/.+/.test(path)
+      ) {
+        $('.main-container, .main-right, .main-right-wrapper').addClass('is-article')
+      } else {
+        $('.main-container, .main-right, .main-right-wrapper').removeClass('is-article')
+      }
+    }
+
+    const gray = "none"
+    const setGrayStyle = () => {
+      if (gray === 'none') {
+        return
+      } else if (gray === 'index') {
+        location.pathname === '/' ? $('#gray').show() : $('#gray').hide()
+      } else if (gray === 'all') {
+        $('#gray').show()
+      }
+    }
+    setGrayStyle()
+
+
+    window.onload = function () {
+      checkAndSetArticlePageLayout()
+      setTimeout(() => {
+        $('#load').slideUp()
+        $('#container').slideToggle()
+        setTimeout(() => {
+          initScroll();
+        }, 500)
+      }, 500)
+    }
+    
+    let status = 0
+    // 对所有链接跳转事件绑定pjax容器container
+    $(document).pjax('a[target!=_blank]', '#main-container', {
+      container: '#main-container',
+      fragment: '#main-container',
+      timeout: 8000
+    })
+
+    $(document).on('pjax:start', function() {
+    })
+    $(document).on('pjax:complete', function() {
+      status = 0
+      $('.main-container').addClass('to-up').on('animationend', function() {
+        $(this).removeClass('to-up')
+      })
+      setGrayStyle()
+      checkAndSetArticlePageLayout()
+    })
+    $(document).on('pjax:popstate', function() {
+      status = -1
+      checkAndSetArticlePageLayout()
+    });
+  </script>
+</body>
+</html>
