@@ -193,7 +193,7 @@
   const ipt = document.querySelector('#search-input')
   const btn = document.querySelector('#search-btn')
   const layer = document.querySelector('#search-layer')
-  const posts = JSON.parse(`[{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"免杀开发基础(1)","path":"2024/04/12/免杀开发基础-1/"},{"title":"2024HVV在即| 最新漏洞CVE库(1.5W)与历史漏洞POC总结分享!","path":"2024/04/30/2024HVV在即-最新漏洞CVE库-1-5W-与历史漏洞POC总结分享/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"安全开发实战(2)---域名反查IP","path":"2024/04/30/安全开发实战-2-域名反查IP/"},{"title":"安全开发实战(3)---存活探测与端口扫描","path":"2024/04/30/安全开发实战-3-存活探测与端口扫描/"},{"title":"安全开发实战(6)---对fofa收集的漏洞资产使用poc进行批量验证","path":"2024/04/30/安全开发实战-6-对fofa收集的漏洞资产使用poc进行批量验证/"},{"title":"安全开发实战(4)---whois与子域名爆破","path":"2024/04/30/安全开发实战-4-whois与子域名爆破/"},{"title":"安全开发实战(5)---fofa进行漏洞poc的信息收集","path":"2024/04/30/安全开发实战-5-fofa进行漏洞poc的信息收集/"},{"title":"某音矩阵云混剪系统V2.3.0代码审计(1)","path":"2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/"},{"title":"某小学AK,SK泄露导致横向到云主机控制台","path":"2024/04/16/某小学AK-SK泄露导致横向到云主机控制台/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"网安开发实战(1)-Cdn","path":"2024/04/16/网安开发实战-1-Cdn/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"}]`)
+  const posts = JSON.parse(`[{"title":"2024HVV在即| 最新漏洞CVE库(1.5W)与历史漏洞POC总结分享!","path":"2024/04/30/2024HVV在即-最新漏洞CVE库-1-5W-与历史漏洞POC总结分享/"},{"title":"免杀开发基础(1)","path":"2024/04/12/免杀开发基础-1/"},{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"安全开发实战(2)---域名反查IP","path":"2024/04/30/安全开发实战-2-域名反查IP/"},{"title":"安全开发实战(4)---whois与子域名爆破","path":"2024/04/30/安全开发实战-4-whois与子域名爆破/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"安全开发实战(3)---存活探测与端口扫描","path":"2024/04/30/安全开发实战-3-存活探测与端口扫描/"},{"title":"安全开发实战(5)---fofa进行漏洞poc的信息收集","path":"2024/04/30/安全开发实战-5-fofa进行漏洞poc的信息收集/"},{"title":"某小学AK,SK泄露导致横向到云主机控制台","path":"2024/04/16/某小学AK-SK泄露导致横向到云主机控制台/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"某音矩阵云混剪系统V2.3.0代码审计(1)","path":"2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/"},{"title":"网安开发实战(1)-Cdn","path":"2024/04/16/网安开发实战-1-Cdn/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"},{"title":"安全开发实战(6)---对fofa收集的漏洞资产使用poc进行批量验证","path":"2024/04/30/安全开发实战-6-对fofa收集的漏洞资产使用poc进行批量验证/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"}]`)
   ipt.addEventListener('keyup', e => {
     if (e.key === 'Enter') {
       handleSearch()
@@ -219,7 +219,7 @@
           <div>
             <a href="/${post.path}">${post.title.replace(new RegExp(ipt.value), `<span>${ipt.value}</span>`)}</a>
           </div>
-          <img src="${post.cover || '/imgs/default-cover.webp' }" />
+          <img src="${post.cover || 'https://xiaoyunxi.wiki/imgs/default-cover.webp' }" />
         </li>
       `
     })
@@ -369,7 +369,7 @@
           
           <p class="article-info--date">日期：2024-04-30 13:48:05</p>
         </div>
-        <img src="/imgs/default-cover.webp" alt="" class="article-cover">
+        <img src="https://xiaoyunxi.wiki/imgs/default-cover.webp" alt="" class="article-cover">
       </div>
     </div>
     <article class="article-content markdown-body">
@@ -522,7 +522,7 @@
       <p>Power By <a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/">Hexo</a>.</p>
       <p>Theme：<a target="_blank" rel="noopener" href="https://github.com/Aizener/hexo-theme-cola">Cola.</a></p>
     </div>
-    <p class="main-right--refer"><a target="_blank" rel="noopener" href="https://beian.miit.gov.cn/#/Integrated/index">暂无</a> </p>
+    <p class="main-right--refer"><a href="">暂无</a> </p>
   </div>
 </div>
 
