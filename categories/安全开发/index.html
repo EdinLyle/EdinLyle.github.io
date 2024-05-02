@@ -193,7 +193,7 @@
   const ipt = document.querySelector('#search-input')
   const btn = document.querySelector('#search-btn')
   const layer = document.querySelector('#search-layer')
-  const posts = JSON.parse(`[{"title":"2024HVV在即| 最新漏洞CVE库(1.5W)与历史漏洞POC总结分享!","path":"2024/04/30/2024HVV在即-最新漏洞CVE库-1-5W-与历史漏洞POC总结分享/"},{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"免杀开发基础(1)","path":"2024/04/12/免杀开发基础-1/"},{"title":"安全开发实战(2)---域名反查IP","path":"2024/04/30/安全开发实战-2-域名反查IP/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"安全开发实战(4)---whois与子域名爆破","path":"2024/04/30/安全开发实战-4-whois与子域名爆破/"},{"title":"安全开发实战(3)---存活探测与端口扫描","path":"2024/04/30/安全开发实战-3-存活探测与端口扫描/"},{"title":"安全开发实战(6)---对fofa收集的漏洞资产使用poc进行批量验证","path":"2024/04/30/安全开发实战-6-对fofa收集的漏洞资产使用poc进行批量验证/"},{"title":"安全开发实战(5)---fofa进行漏洞poc的信息收集","path":"2024/04/30/安全开发实战-5-fofa进行漏洞poc的信息收集/"},{"title":"某小学AK,SK泄露导致横向到云主机控制台","path":"2024/04/16/某小学AK-SK泄露导致横向到云主机控制台/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"某音矩阵云混剪系统V2.3.0代码审计(1)","path":"2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/"},{"title":"网安开发实战(1)-Cdn","path":"2024/04/16/网安开发实战-1-Cdn/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"}]`)
+  const posts = JSON.parse(`[{"title":"Hexo的使用","path":"2024/04/03/Hexo的使用/"},{"title":"免杀开发基础(1)","path":"2024/04/12/免杀开发基础-1/"},{"title":"2024HVV在即| 最新漏洞CVE库(1.5W)与历史漏洞POC总结分享!","path":"2024/04/30/2024HVV在即-最新漏洞CVE库-1-5W-与历史漏洞POC总结分享/"},{"title":"如何从小程序到教务系统","path":"2024/04/09/如何从小程序到教务系统/"},{"title":"安全开发实战(2)---域名反查IP","path":"2024/04/30/安全开发实战-2-域名反查IP/"},{"title":"安全开发实战(3)---存活探测与端口扫描","path":"2024/04/30/安全开发实战-3-存活探测与端口扫描/"},{"title":"安全开发实战(6)---对fofa收集的漏洞资产使用poc进行批量验证","path":"2024/04/30/安全开发实战-6-对fofa收集的漏洞资产使用poc进行批量验证/"},{"title":"安全开发实战(4)---whois与子域名爆破","path":"2024/04/30/安全开发实战-4-whois与子域名爆破/"},{"title":"安全开发实战(5)---fofa进行漏洞poc的信息收集","path":"2024/04/30/安全开发实战-5-fofa进行漏洞poc的信息收集/"},{"title":"某音矩阵云混剪系统V2.3.0代码审计(1)","path":"2024/04/25/某音矩阵云混剪系统V2-3-0代码审计-1/"},{"title":"某小学AK,SK泄露导致横向到云主机控制台","path":"2024/04/16/某小学AK-SK泄露导致横向到云主机控制台/"},{"title":"小白如何挖到自己的第一个漏洞","path":"2024/04/07/小白如何挖到自己的第一个漏洞/"},{"title":"网安开发实战(1)-Cdn","path":"2024/04/16/网安开发实战-1-Cdn/"},{"title":"记第一次eudsrc拿到RCE(上)","path":"2024/04/05/记第一次edusrc拿到RCE-上/"},{"title":"记第一次eudsrc拿到RCE(下)","path":"2024/04/06/记第一次eudsrc拿到RCE-下/"}]`)
   ipt.addEventListener('keyup', e => {
     if (e.key === 'Enter') {
       handleSearch()
@@ -352,9 +352,8 @@
   <div class="index-left">
     
       <div class="index-article">
-        <!-- <img class="index-article--cover" src="/imgs/default-cover.webp" alt=""> -->
         <div class="index-article--box">
-          <img class="index-article--cover" data-cover="imgs/default-cover.webp" alt="安全开发实战(6)---对fofa收集的漏洞资产使用poc进行批量验证" />
+          <img class="index-article--cover" data-cover="https://xiaoyunxi.wiki/imgs/default-cover.webp" alt="安全开发实战(6)---对fofa收集的漏洞资产使用poc进行批量验证" />
         </div>
         <div class="index-article--content">
           <a href="/2024/04/30/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-6-%E5%AF%B9fofa%E6%94%B6%E9%9B%86%E7%9A%84%E6%BC%8F%E6%B4%9E%E8%B5%84%E4%BA%A7%E4%BD%BF%E7%94%A8poc%E8%BF%9B%E8%A1%8C%E6%89%B9%E9%87%8F%E9%AA%8C%E8%AF%81/">安全开发实战(6)---对fofa收集的漏洞资产使用poc进行批量验证 </a>
@@ -375,9 +374,8 @@
       </div>
     
       <div class="index-article">
-        <!-- <img class="index-article--cover" src="/imgs/default-cover.webp" alt=""> -->
         <div class="index-article--box">
-          <img class="index-article--cover" data-cover="imgs/default-cover.webp" alt="安全开发实战(4)---whois与子域名爆破" />
+          <img class="index-article--cover" data-cover="https://xiaoyunxi.wiki/imgs/default-cover.webp" alt="安全开发实战(4)---whois与子域名爆破" />
         </div>
         <div class="index-article--content">
           <a href="/2024/04/30/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-4-whois%E4%B8%8E%E5%AD%90%E5%9F%9F%E5%90%8D%E7%88%86%E7%A0%B4/">安全开发实战(4)---whois与子域名爆破 </a>
@@ -398,9 +396,8 @@
       </div>
     
       <div class="index-article">
-        <!-- <img class="index-article--cover" src="/imgs/default-cover.webp" alt=""> -->
         <div class="index-article--box">
-          <img class="index-article--cover" data-cover="imgs/default-cover.webp" alt="安全开发实战(2)---域名反查IP" />
+          <img class="index-article--cover" data-cover="https://xiaoyunxi.wiki/imgs/default-cover.webp" alt="安全开发实战(2)---域名反查IP" />
         </div>
         <div class="index-article--content">
           <a href="/2024/04/30/%E5%AE%89%E5%85%A8%E5%BC%80%E5%8F%91%E5%AE%9E%E6%88%98-2-%E5%9F%9F%E5%90%8D%E5%8F%8D%E6%9F%A5IP/">安全开发实战(2)---域名反查IP </a>
