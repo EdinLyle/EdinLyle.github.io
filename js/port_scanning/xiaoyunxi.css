@@ -1,0 +1,240 @@
+@charset "UTF-8";
+
+/* 公共部分 */
+.row{margin-right: 0; margin-left: 0;}
+.form-row{display: flex;flex-wrap: wrap;}
+.form-inline {display: -ms-flexbox;display: flex;-ms-flex-flow: row wrap;flex-flow: row wrap;-ms-flex-align: center;align-items: center;}
+.float-right {float:right!important}
+.glyphicon {padding-right:3px;padding-left: 3px;}
+.form-horizontal .form-group {margin-right:0px;margin-left:0px;}
+.alert-box{display:none;position:fixed;top:30%;width:30%;left:35%;z-index:9999;text-align:center;}
+.navbar{border-radius:0;border:0}
+.navbar-form{border:0}
+.navbar-right{margin-right:0}
+#oktoolboxNav .navbar-nav>li>a {
+    max-width: 186px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    display: block;
+}
+.navbar-inverse {
+	background-color:#1296db
+}
+.navbar-inverse .navbar-brand {
+    color: #fff;
+}
+.navbar-inverse .navbar-brand:focus, .navbar-inverse .navbar-brand:hover {
+    opacity: .95;
+}
+.mb-3, .my-3 {
+    margin-bottom: 1rem!important;
+}
+body,button,input,select,textarea,p,ul,li,a,label,span,div {
+	font-family: Microsoft YaHei, tahoma, arial, "Hiragino Sans GB", \5b8b\4f53, sans-serif;
+}
+blockquote{margin:10px 0 0 0;padding:0 0 0 10px;border-left:5px solid red}
+ul,li {	list-style: none;}
+textarea.form-control{height:250px!important;-webkit-appearance: none;}
+input[type=text]{-webkit-appearance: none;}
+
+a{color:#333;text-decoration: none;}
+a:link {text-decoration: none;}
+a:visited {text-decoration: none;}
+a:hover {color: #0000FF;text-decoration: underline;	cursor: pointer;}
+a:active {color: #0000FF;text-decoration: none;}
+
+/*---------- 头部 ----------- */
+#topLogo{font-size:26px;text-align:center;}
+#langDrop .dropdown-toggle {
+    color: #fff;
+    padding-bottom:10px;
+    text-decoration: none;
+}
+#langDrop .dropdown-toggle:hover {
+    opacity: .95;
+}
+#search .input-group{margin: 0 auto 0 auto;}
+#searchInput, #searchInput:focus{
+	border: 1px solid #ccc;
+	border-right:0;
+    border-radius: 6px 0 0 6px;
+    box-shadow: none;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    height: 34px !important;
+}
+#searchBtn{
+	border-color:#ccc;
+	border-left:0;
+	border-radius: 0 6px 6px 0;
+	background: white;
+	color: #1296db;
+	height: 34px !important;
+}
+#searchResults{
+	margin:0;
+	border-radius: 0 0 6px 6px;
+	width:100%;
+	border-top: 0;
+	z-index: 99999;
+}
+#searchResults>li>a{
+	overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 3px 10px;
+}
+#searchResults>li>a>i{
+	padding-right: 5px
+}
+
+#moreMenu .dropdown-toggle{color:#777;padding-bottom:10px;}
+#moreMenuUL{min-width:110px}
+#oktoolboxContainer{margin-top: 10px;}
+
+#wxQrcode i{color:#fff;margin-right:15px;}
+#wxQrcodeUL{text-align:center;margin-right:5px;min-width:180px;}
+#wxQrcodeUL li{width:180px;color:#333;}
+#wxQrcodeUL li span{background:url(../../img/common/oktoolbox-apk-500.png);width:180px;height:180px;background-size:100% 100%;display:block;}
+
+/* ---------------ad--------------- */
+/*正文顶部*/
+#containerTopAd{
+	width:100%;
+	margin:0px auto 20px auto;
+	text-align: center;
+	vertical-align: middle;
+	cursor:pointer;
+}
+#closeContainerTopAd{font-size:14px;color:#fff;font-weight:100;background:rgba(0,0,0,0.5);float: right;padding: 1px 8px;text-align:center;}
+/*pop*/
+#popAd{
+	cursor:pointer;
+ 	position: fixed; left: 0; top: 0; right: 0; bottom: 0;
+    margin: auto;
+    z-index:99999;
+}
+#closePopAd{font-size:14px;color:#fff;font-weight:100;background:rgba(0,0,0,0.5);float:right;padding:1px 8px;text-align:center;}
+
+/*---------- 工具 ----------- */
+#toolList blockquote h2{font-size:18px;}
+#toolList .thumbnail{
+	border:none;
+}
+#toolList a{text-decoration: none;}
+#toolList .caption{
+	padding:9px 0;
+}
+#toolList .caption p{
+	overflow: hidden;
+    line-height: 20px;
+    height: 40px;
+    text-align: center;
+}
+#toolList img{
+	max-width: 100%;
+	max-height: 100%;
+	border: 1px solid #ddd;
+    border-radius: 16%;
+}
+#toolList h4{
+	text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.toolName {
+	display:inline-block;
+	font-size: 18px;
+}
+#codeTextArea{
+	width:100%;
+	height:100px !important;
+}
+.modal-footer-btn{
+	background-color: rgb(242, 242, 242);
+	color:blue;
+	text-align: center;
+	cursor: pointer;
+	border-radius: 0 0 6px 6px;
+}
+#toolDetailNav h1{
+	font-size: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: 16px auto;
+}
+#toolDescription h1,#toolDescription h2,#toolDescription h3,#toolDescription h4,#toolDescription h5{
+	font-size: 14px;
+    font-weight: bold;
+}
+#toolDescription table{
+	border-spacing: 0;
+    border-collapse: collapse;
+}
+#toolDescription table caption{
+	padding-top: 8px;
+    padding-bottom: 8px;
+    color: #777;
+    text-align: left;
+}
+#toolDescription table th, #toolDescription table td{
+    padding: 8px;
+    line-height: 1.42857143;
+    vertical-align: top;
+    border: 1px solid #ddd;
+}
+.file-icon{
+    background-size: 24px 24px;
+    height: 24px;
+    width: 24px;
+    display: inline-block;
+    vertical-align: middle;
+}
+.file-icon.i0 {background-image: url(../../../static/img/common/iodraw.svg)}
+.file-icon.i1 {background-image: url(../../../static/img/iodraw/flow.svg)}
+.file-icon.i2 {background-image: url(../../../static/img/iodraw/mind.svg)}
+.file-icon.i3 {background-image: url(../../../static/img/iodraw/gantt.svg)}
+.file-icon.i4 {background-image: url(../../../static/img/iodraw/whiteboard.svg)}
+.file-icon.i5 {background-image: url(../../../static/img/iodraw/codechart.svg)}
+.file-icon.i6 {background-image: url(../../../static/img/iodraw/textflow.svg)}
+.file-icon.i7 {background-image: url(../../../static/img/iodraw/chart.svg)}
+.file-icon.i8 {background-image: url(../../../static/img/iodraw/svg.svg)}
+.file-icon.i9 {background-image: url(../../../static/img/iodraw/poster.svg)}
+.file-icon.i10 {background-image: url(../../../static/img/iodraw/image-editor.svg)}
+.file-icon.i11 {background-image: url(../../../static/img/iodraw/ppt.svg)}
+
+/*---------- 底部 ----------- */
+#oktoolboxFoot {
+	clear: both;
+	width:100%;
+	margin:50px auto 0 auto;
+	padding-top: 10px;
+	line-height: 30px;
+	color: #777777;
+	text-align: center;
+	font-size: 12px;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: 999;
+}
+#oktoolboxFoot .container{
+	margin: 0 auto;
+    border-top: 1px solid #e4e4e4;
+}
+#oktoolboxFoot .list-inline{
+	padding-top: 40px;
+    padding-bottom: 40px;
+}
+#oktoolboxFoot .list-inline li{
+    margin-left: 40px;
+}
+#oktoolboxFoot a {font-size: 12px;color: #777777;}
+
+
+/*---------- 自适应移动端，放在最后 ！！！----------- */
+@media (max-width: 1200px) {
+	.pc-show{display:none}
+}
