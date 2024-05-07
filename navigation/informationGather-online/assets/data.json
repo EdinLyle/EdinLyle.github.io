@@ -517,13 +517,13 @@ getData([
                     {
                         "url": "https://www.whatweb.net/",
                         "logo": "assets/images/logos/python.jpg",
-                        "title": "在线cms指纹识别",
+                        "title": "whatweb在线cms",
                         "desc": "whatweb在线版(挂梯子)"
                     },
                      {
                         "url": "https://c.yuanxiaoyin.com/",
-                        "logo": "assets/images/logos/python.jpg",
-                        "title": "在线cms指纹识别",
+                        "logo": "assets/images/logos/yin.ico",
+                        "title": "源小印在线cms指纹识别",
                         "desc": "源小印CMS识别"
                     },
                      {
