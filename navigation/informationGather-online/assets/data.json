@@ -95,7 +95,7 @@ getData([
                 "en_name": "Company Info Query",
                 "web": [
                     {
-                        "url": "http://www.beian.miit.gov.cn/publish/query/indexFirst.action",
+                        "url": "https://beian.miit.gov.cn/#/Integrated/index",
                         "logo": "assets/images/logos/ICP.png",
                         "title": "工信部备案查询",
                         "desc": "（官方）工信部官方备案查询网站"
@@ -131,7 +131,7 @@ getData([
                         "desc": "（官方）个人信用查询搜索-企业信息查询搜索-统一社会信用代码查询"
                     },
                     {
-                        "url": "http://114.55.181.28/databaseInfo/index",
+                        "url": "https://zfwzxx.www.gov.cn/",
                         "logo": "assets/images/logos/cloud.jpg",
                         "title": "全国政府网站基本数据库",
                         "desc": "全国政府网站基本数据库"
@@ -259,7 +259,7 @@ getData([
                 "en_name": "Email Info Query",
                 "web": [
                     {
-                        "url": "https://github.com/m4ll0k/Infoga",
+                        "url": "https://github.com/The404Hacking/Infoga",
                         "logo": "assets/images/logos/infoga.jpg",
                         "title": "Infoga",
                         "desc": "从不同的公共源网络收集电子邮件帐户信息"
