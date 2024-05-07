@@ -11,16 +11,16 @@ getData([
                 "desc": "提供许多搜索服务"
             },
             {
-                "url": "https://www.zoomeye.org/",
-                "logo": "assets/images/logos/zoomeye.jpg",
-                "title": "ZoomEye",
-                "desc": "知道创宇的网络空间搜索引擎"
+                "url": "https://hunter.qianxin.com/",
+                "logo": "assets/images/logos/diagram.ico",
+                "title": "鹰图",
+                "desc": "奇安信的网络空间搜索引擎"
             },
             {
                 "url": "https://web.archive.org/",
                 "logo": "assets/images/logos/waybackmachine.png",
                 "title": "WayBack Machine",
-                "desc": "网站的历史归档信息"
+                "desc": "网站的历史归档信息(挂梯子)"
             },
             {
                 "url": "https://github.com/ElevenPaths/FOCA",
@@ -179,6 +179,18 @@ getData([
                         "desc": "第三方Cert查询服务"
                     },
                     {
+                        "url": "https://myssl.com/ssl.html",
+                        "logo": "assets/images/logos/crt_sh.png",
+                        "title": "Censys",
+                        "desc": "SSL状态监测"
+                    },
+                    {
+                        "url": "https://www.chinassl.net/ssltools/ssl-checker.html",
+                        "logo": "assets/images/logos/world.png",
+                        "title": "Censys",
+                        "desc": "SSL证书在线检测工具"
+                    },
+                    {
                         "url": "https://censys.io/",
                         "logo": "assets/images/logos/censys.png",
                         "title": "Censys",
@@ -303,8 +315,8 @@ getData([
                         "desc": "美国区域互联网注册管理机构"
                     },
                     {
-                        "url": "https://phpinfo.me/bing.php",
-                        "logo": "assets/images/logos/tuzi.jpg",
+                        "url": "https://chapangzhan.com/",
+                        "logo": "assets/images/logos/dianao.ico",
                         "title": "在线C段查询",
                         "desc": "在线C段查询服务"
                     },
@@ -327,10 +339,10 @@ getData([
                         "desc": "IP跟踪"
                     },
                     {
-                        "url": "https://spyse.com/",
-                        "logo": "assets/images/logos/spyse.png",
-                        "title": "Spyse",
-                        "desc": "查找有关Internet资产的技术信息"
+                        "url": "https://www.shodan.io/",
+                        "logo": "assets/images/logos/shodan.jpg",
+                        "title": "Shodan",
+                        "desc": "根据IP进行信息查询"
                     },
                 ]
             },
@@ -385,12 +397,6 @@ getData([
                         "logo": "assets/images/logos/ipip.png",
                         "title": "IPIP",
                         "desc": "IPIP全球ping服务（国内+国外）"
-                    },
-                    {
-                        "url": "https://asm.ca.com/en/ping.php",
-                        "logo": "assets/images/logos/asm_ca.png",
-                        "title": "ASM CA",
-                        "desc": "国外ping服务"
                     },
                     {
                         "url": "https://www.cdnplanet.com/tools/cdnfinder/",
@@ -509,10 +515,22 @@ getData([
                         "desc": "简洁的指纹检测网站"
                     },
                     {
-                        "url": "http://whatweb.bugscaner.com/look/",
+                        "url": "https://www.whatweb.net/",
                         "logo": "assets/images/logos/python.jpg",
                         "title": "在线cms指纹识别",
-                        "desc": "检测后台基于python编写"
+                        "desc": "whatweb在线版(挂梯子)"
+                    },
+                     {
+                        "url": "https://c.yuanxiaoyin.com/",
+                        "logo": "assets/images/logos/python.jpg",
+                        "title": "在线cms指纹识别",
+                        "desc": "源小印CMS识别"
+                    },
+                     {
+                        "url": "https://site-analyzer.pro/zh/services-seo/cms-checker/",
+                        "logo": "assets/images/logos/python.jpg",
+                        "title": "在线cms指纹识别",
+                        "desc": "cms探测器(挂梯子)"
                     },
                     {
                         "url": "https://fp.shuziguanxing.com/",
@@ -669,12 +687,6 @@ getData([
                         "desc": "大力盘搜索--百度网盘"
                     },
                     {
-                        "url": "http://megasearch.co/",
-                        "logo": "assets/images/logos/mega.jpg",
-                        "title": "MegaSearch",
-                        "desc": "Mega网盘搜索（国外知名云盘服务）"
-                    },
-                    {
                         "url": "https://github.com/gudegg/yunSpider",
                         "logo": "assets/images/logos/github.jpg",
                         "title": "YunSpider",
@@ -698,7 +710,7 @@ getData([
                         "url": "https://web.archive.org/",
                         "logo": "assets/images/logos/waybackmachine.png",
                         "title": "WayBack Machine",
-                        "desc": "网站的历史归档信息"
+                        "desc": "网站的历史归档信息(挂梯子)"
                     },
                     {
                         "url": "http://tool.chinaz.com/history",
@@ -723,6 +735,12 @@ getData([
                         "logo": "assets/images/logos/circl.png",
                         "title": "Circl",
                         "desc": "计算机应急响应中心"
+                    },
+                    {
+                        "url": "https://x.threatbook.com/",
+                        "logo": "assets/images/logos/X.png",
+                        "title": "Circl",
+                        "desc": "微步社区"
                     },
                 ]
             },
@@ -749,12 +767,6 @@ getData([
                         "desc": "POC数量较多的漏洞库"
                     },
                     {
-                        "url": "https://www.securityfocus.com/",
-                        "logo": "assets/images/logos/securityfocus.png",
-                        "title": "SecurityFocus",
-                        "desc": "国外知名公开漏洞库"
-                    },
-                    {
                         "url": "http://www.cnnvd.org.cn/",
                         "logo": "assets/images/logos/cnnvd.png",
                         "title": "CNNVD",
@@ -777,12 +789,6 @@ getData([
                         "logo": "assets/images/logos/nvd.png",
                         "title": "NVD",
                         "desc": "美国国家漏洞数据库"
-                    },
-                    {
-                        "url": "http://ivd.winicssec.com/",
-                        "logo": "assets/images/logos/ivd.png",
-                        "title": "IVD",
-                        "desc": "工控系统行业漏洞库平台"
                     },
                     {
                         "url": "https://www.us-cert.gov/ics/",
